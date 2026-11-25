@@ -115,7 +115,7 @@ var D={
 var MCARDS=[
  ['com','📢','Comunicados','Receba notícias, avisos e informações importantes do condomínio.'],
  ['acc','🚪','Controle de Acesso','Gerencie visitantes, prestadores e liberações de entrada.'],
- ['faq','❓','Dúvidas Frequentes','Consulte respostas rápidas sobre regras, reservas e funcionamento.'],
+ ['faq','📘','Manual do Morador','Regras, orientações e respostas para o dia a dia no condomínio.'],
  ['ouv','💬','Ouvidoria','Canal para sugestões, reclamações e solicitações dos moradores.'],
  ['tv','📺','TV Arboreto','Vídeos e novidades do condomínio.']];
 var ACARDS=[
@@ -124,8 +124,8 @@ var ACARDS=[
  ['fra','💡','Frases Motivacionais Diárias','Mensagens que inspiram um condomínio mais unido e feliz.'],
  ['ale','⚠️','Alerta Rápido','Emergências e situações urgentes.'],
  ['tv','📺','TV Arboreto','Comunicados, notícias e entretenimento.'],
- ['pf','❓','Perguntas Frequentes','Perguntas dos moradores e respostas da administração.']];
-var MNAV=[['com','Comunicados','📢'],['acc','Controle de Acesso','🚪'],['faq','Dúvidas Frequentes','❓'],['ouv','Ouvidoria','💬']];
+ ['pf','📘','Manual do Morador','Escreva o manual e responda as perguntas dos moradores.']];
+var MNAV=[['com','Comunicados','📢'],['acc','Controle de Acesso','🚪'],['faq','Manual','📘'],['ouv','Ouvidoria','💬']];
 var ANAV=[['ass','Assistente','🎙️'],['age','Agenda','📅'],['tar','Tarefas','✅'],['adm','Administração','⚙️'],['aud','Auditoria','🔒']];
 var TREE='<svg width="46" height="40" viewBox="0 0 46 40" aria-hidden="true"><g fill="#d9b73e"><ellipse cx="23" cy="9" rx="4" ry="7"/><ellipse cx="14" cy="14" rx="4" ry="6.5" transform="rotate(-40 14 14)"/><ellipse cx="32" cy="14" rx="4" ry="6.5" transform="rotate(40 32 14)"/><ellipse cx="9" cy="23" rx="3.5" ry="6" transform="rotate(-65 9 23)"/><ellipse cx="37" cy="23" rx="3.5" ry="6" transform="rotate(65 37 23)"/><rect x="21.6" y="18" width="2.8" height="20" rx="1.4"/></g></svg>';
 function head(){
@@ -773,7 +773,7 @@ function render(){
  app.innerHTML=head()+banner()+'<main>'+(showBack?back():'')+body()+extra()+'</main><nav class="nav">'+nav.map(function(n){return '<button data-go="'+n[0]+'"'+(n[0]===act?' class="on"':'')+'><span>'+n[2]+'</span>'+n[1]+'</button>'}).join('')+'</nav>';
 }
 app.addEventListener('click',function(e){
- var el=e.target.closest('[data-go],[data-role],[data-act],[data-task],[data-vid],[data-fdel],[data-pdel],[data-ech],[data-tvi],[data-tvdel],[data-gdel],[data-ktask],[data-kdel],[data-qans],[data-qdis],[data-qdel]');
+ var el=e.target.closest('[data-go],[data-role],[data-act],[data-task],[data-vid],[data-fdel],[data-pdel],[data-ech],[data-tvi],[data-tvdel],[data-gdel],[data-ktask],[data-kdel],[data-qans],[data-qdis],[data-qdel],[data-mdel],[data-medit],[data-mtp]');
  if(!el)return;
  if(el.dataset.role){if(el.dataset.role==='adm'&&window.ME&&window.ME.role==='morador'){return;}if(el.dataset.role==='adm'&&!st.user){LG.msg='';st.sc='login';}else{st.role=el.dataset.role;st.sc=st.role==='adm'?'adm':'mhome';}}
  else if(el.dataset.go){st.sc=el.dataset.go;if(st.sc==='splash'){st.role=null;M=[];}}
@@ -790,6 +790,12 @@ app.addEventListener('click',function(e){
  else if(el.dataset.pdel){P.items=P.items.filter(function(i){return i.id!==el.dataset.pdel});P.dirty=true;P.msg='Toque em Salvar para registrar.';}
  else if(el.dataset.act==='psave'){psave();return;}
  else if(el.dataset.act==='retro'){retroPlay();return;}
+ else if(el.dataset.act==='mtoggle'){MN.form=!MN.form;MN.edit=null;MN.msg='';}
+ else if(el.dataset.act==='mcancel'){MN.form=false;MN.edit=null;}
+ else if(el.dataset.act==='msave'){mSave();return;}
+ else if(el.dataset.medit){MN.edit=el.dataset.medit;MN.form=true;MN.msg='';}
+ else if(el.dataset.mdel){mDel(el.dataset.mdel);return;}
+ else if(el.dataset.mtp){var mtt=document.getElementById('mt');if(mtt)mtt.value=el.dataset.mtp;return;}
  else if(el.dataset.act==='qsend'){qSend();return;}
  else if(el.dataset.qans){qAns(el.dataset.qans);return;}
  else if(el.dataset.qdis){qHide(el.dataset.qdis,'Descartou pergunta');return;}
@@ -901,7 +907,7 @@ function basicMarcelo(tx){
   var m=P.items.filter(function(i){return t.indexOf(norm(i.s))>-1&&i.s||t.indexOf(norm(i.n))>-1}).slice(0,3).map(function(i){return i.n+', '+i.p});
   return m.length?m.join('; ')+'.':(P.items.length?'Você tem '+P.items.length+' prestadores cadastrados. Veja a lista na tela de contatos.':'Ainda não há prestadores cadastrados.');
  }
- if(/pergunta|duvida|dúvida/.test(t))return pq?'Há '+pq+(pq>1?' perguntas de moradores':' pergunta de morador')+' esperando resposta, na aba Perguntas Frequentes.':'Nenhuma pergunta de morador esperando resposta.';
+ if(/pergunta|duvida|dúvida/.test(t))return pq?'Há '+pq+(pq>1?' perguntas de moradores':' pergunta de morador')+' esperando resposta, na aba Manual do Morador.':'Nenhuma pergunta de morador esperando resposta.';
  if(/alerta|emerg/.test(t))return A.cur&&A.cur.ativo?'Há um alerta ativo: '+A.cur.tipo+'.':'Não há nenhum alerta ativo no momento.';
  if(/video|vídeo|tv/.test(t))return T.items.length?'O último vídeo na TV Arboreto é '+T.items[0].t+'.':'Ainda não há vídeos na TV Arboreto.';
  if(/obrigad/.test(t))return 'Por nada, '+ap+'! É um prazer ajudar.';
@@ -911,6 +917,69 @@ window.__onMe=function(me){
  if(me.role==='adm'){var u=USERS[me.id];st.user={id:me.id,nome:u.nome,ap:u.ap,cargo:u.cargo,def:false};AU.uid='u:'+me.id;memLoad(me.id);}
  render();
 };
+
+</script>
+<script>
+
+var MN={items:[],form:false,edit:null,msg:''};
+var MTP=['Horário de silêncio','Áreas comuns e reservas','Mudanças e obras','Animais de estimação','Coleta de lixo','Visitantes e portaria','Garagem e estacionamento','Segurança e emergências'];
+function faqView(){
+ var h='<h2>Manual do Morador</h2>';
+ if(MN.items.length)h+=MN.items.map(function(c){return '<details><summary>'+esc(c.t)+'</summary><p>'+esc(c.d).replace(/\n/g,'<br>')+'</p></details>'}).join('');
+ else h+='<p class="note">O manual está sendo preparado pela administração.</p>';
+ var pub=Q.ans.filter(function(a){return !a.hidden&&a.a}).sort(function(a,b){return b.ts-a.ts});
+ if(pub.length)h+='<div class="cat">Perguntas respondidas pelo condomínio</div>'+pub.map(function(a){return '<details><summary>'+esc(a.q)+'</summary><p>'+esc(a.a).replace(/\n/g,'<br>')+'</p></details>'}).join('');
+ var d={};Q.ans.forEach(function(a){d[a.id]=1});
+ var wait=Q.mine.filter(function(m){return !d[m.id]});
+ if(wait.length)h+='<div class="cat">Suas perguntas aguardando resposta</div>'+wait.map(function(m){return box(esc(m.q),'Aguardando resposta da administração',hora(m.ts))}).join('');
+ h+='<div class="cat">Não achou no manual? Pergunte</div><div class="box"><label for="qq">Sua pergunta</label><textarea id="qq" rows="3" maxlength="300"></textarea><label for="qw">Seu nome e apartamento (opcional)</label><input id="qw" maxlength="60"><button class="gold" data-act="qsend">Enviar pergunta</button>'+(Q.msg?'<p class="note">'+esc(Q.msg)+'</p>':'')+'</div>';
+ return h;
+}
+function pfView(){
+ var h='<h2>Manual do Morador</h2><div class="cat">Capítulos do manual ('+MN.items.length+')</div>';
+ if(MN.form){
+  var cur=MN.edit?MN.items.filter(function(x){return x.id===MN.edit})[0]:null;
+  h+='<div class="box"><label for="mt">Título do capítulo</label><input id="mt" maxlength="80" value="'+esc(cur?cur.t:'')+'" placeholder="Ex.: Horário de silêncio">';
+  if(!cur)h+='<div class="chips" style="margin-top:8px">'+MTP.map(function(t){return '<button class="chip" data-mtp="'+esc(t)+'">'+esc(t)+'</button>'}).join('')+'</div>';
+  h+='<label for="md">Texto</label><textarea id="md" rows="7" maxlength="3000" placeholder="Escreva as regras e orientações deste capítulo.">'+esc(cur?cur.d:'')+'</textarea><button class="gold" data-act="msave">Salvar e publicar</button><button class="back" data-act="mcancel" style="width:100%;margin-top:6px">Cancelar</button></div>';
+ }
+ if(!MN.items.length&&!MN.form)h+='<p class="note">Nenhum capítulo ainda. Toque em + para escrever o primeiro.</p>';
+ MN.items.forEach(function(c){h+='<div class="box frow"><div><h4>'+esc(c.t)+'</h4><p>'+esc(c.d.length>90?c.d.slice(0,90)+'…':c.d)+'</p></div><button class="del" data-medit="'+esc(c.id)+'" aria-label="Editar">✏️</button><button class="del" data-mdel="'+esc(c.id)+'" aria-label="Excluir">🗑</button></div>'});
+ var p=pendQ();
+ h+='<div class="cat">Perguntas dos moradores aguardando resposta ('+p.length+')</div>';
+ if(!p.length)h+='<p class="note">Nenhuma pergunta pendente.</p>';
+ p.forEach(function(x){h+='<div class="box"><h4>'+esc(x.q)+'</h4><small>'+esc(x.who||'Morador')+' • '+hora(x.ts)+'</small><textarea id="ra-'+esc(x.id)+'" rows="3" placeholder="Escreva a resposta" style="margin-top:8px"></textarea><button class="gold" data-qans="'+esc(x.id)+'">Responder e publicar</button><button class="back" data-qdis="'+esc(x.id)+'" style="width:100%">Descartar pergunta</button></div>'});
+ var pub=Q.ans.filter(function(a){return !a.hidden&&a.a}).sort(function(a,b){return b.ts-a.ts});
+ h+='<div class="cat">Já respondidas ('+pub.length+')</div>';
+ if(!pub.length)h+='<p class="note">Nenhuma resposta publicada ainda.</p>';
+ pub.forEach(function(a){h+='<div class="box frow"><div><h4>'+esc(a.q)+'</h4><p>'+esc(a.a)+'</p><small>'+hora(a.ts)+'</small></div><button class="del" data-qdel="'+esc(a.id)+'" aria-label="Excluir resposta">🗑</button></div>'});
+ if(MN.msg)h+='<p class="note">'+esc(MN.msg)+'</p>';
+ if(Q.msg)h+='<p class="note">'+esc(Q.msg)+'</p>';
+ if(!MN.form)h+='<button class="fab" data-act="mtoggle" aria-label="Novo capítulo">+</button>';
+ return h;
+}
+async function mSave(){
+ var t=((document.getElementById('mt')||{}).value||'').trim(),d=((document.getElementById('md')||{}).value||'').trim();
+ if(!t||!d){MN.msg='Escreva o título e o texto do capítulo.';render();return;}
+ if(!AU.db){MN.msg='Sem conexão com o servidor.';render();return;}
+ var list=MN.items.slice(),ed=MN.edit;
+ if(ed)list=list.map(function(x){return x.id===ed?{id:x.id,t:t,d:d,ts:x.ts}:x});else list.push({id:'m'+Date.now(),t:t,d:d,ts:Date.now()});
+ try{await AU.db.doc('tv/manual').set({items:list});audit('Manual do Morador',ed?'Editou capítulo':'Adicionou capítulo',t);MN.items=list;MN.form=false;MN.edit=null;MN.msg='Capítulo publicado para os moradores.';}
+ catch(e){MN.msg='Não foi possível publicar. Só administradores podem editar o manual.';}
+ render();
+}
+async function mDel(id){
+ var x=MN.items.filter(function(i){return i.id===id})[0];if(!x||!AU.db)return;
+ var list=MN.items.filter(function(i){return i.id!==id});
+ try{await AU.db.doc('tv/manual').set({items:list});audit('Manual do Morador','Excluiu capítulo',x.t);MN.items=list;MN.msg='Capítulo excluído.';}
+ catch(e){MN.msg='Não foi possível excluir.';}
+ render();
+}
+(function(){
+ if(window.claude&&claude.use){claude.use('db').then(function(db){if(!db)return;
+  db.doc('tv/manual').onSnapshot(function(sn){var x=sn.exists&&sn.data();MN.items=(x&&x.items)||[];if((st.sc==='faq'||st.sc==='pf')&&!typing()&&!MN.form)render()},function(){});
+ }).catch(function(){})}
+})();
 
 </script>
 <script type="module">
