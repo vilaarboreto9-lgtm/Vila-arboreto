@@ -124,13 +124,14 @@ var ACARDS=[
  ['fra','💡','Frases Motivacionais Diárias','Mensagens que inspiram um condomínio mais unido e feliz.'],
  ['ale','⚠️','Alerta Rápido','Emergências e situações urgentes.'],
  ['tv','📺','TV Arboreto','Comunicados, notícias e entretenimento.'],
- ['pf','📘','Manual do Morador','Escreva o manual e responda as perguntas dos moradores.']];
-var MNAV=[['com','Comunicados','📢'],['acc','Controle de Acesso','🚪'],['faq','Manual','📘'],['ouv','Ouvidoria','💬']];
+ ['pf','📘','Manual do Morador','Escreva o manual e responda as perguntas dos moradores.'],
+ ['res','👥','Moradores','Moradores cadastrados, com bloco e apartamento.']];
+var MNAV=[['mhome','Início','🏠'],['com','Comunicados','📢'],['acc','Controle de Acesso','🚪'],['faq','Manual','📘'],['ouv','Ouvidoria','💬']];
 var ANAV=[['ass','Assistente','🎙️'],['age','Agenda','📅'],['tar','Tarefas','✅'],['adm','Administração','⚙️'],['aud','Auditoria','🔒']];
 var TREE='<svg width="46" height="40" viewBox="0 0 46 40" aria-hidden="true"><g fill="#d9b73e"><ellipse cx="23" cy="9" rx="4" ry="7"/><ellipse cx="14" cy="14" rx="4" ry="6.5" transform="rotate(-40 14 14)"/><ellipse cx="32" cy="14" rx="4" ry="6.5" transform="rotate(40 32 14)"/><ellipse cx="9" cy="23" rx="3.5" ry="6" transform="rotate(-65 9 23)"/><ellipse cx="37" cy="23" rx="3.5" ry="6" transform="rotate(65 37 23)"/><rect x="21.6" y="18" width="2.8" height="20" rx="1.4"/></g></svg>';
 function head(){
- var who=st.role==='adm'?(st.user?st.user.nome:'Administrador'):'Morador';
- return '<header class="hdr"><button class="ic" data-go="splash" aria-label="Início">☰</button><div class="brand">'+TREE+'<span class="v">VILA</span><div class="a">ARBORETO</div><small>CONDOMÍNIO</small></div><button class="who" data-go="splash"><b>👤</b>Olá,<br>'+who+' ▾</button></header>';
+ var who=st.role==='adm'?(st.user?st.user.nome:'Administrador'):(window.ME&&window.ME.nome?String(window.ME.nome).split(' ')[0]:'Morador');
+ return '<header class="hdr"><button class="ic" data-go="'+(st.role==='adm'?'splash':'mhome')+'" aria-label="Início">☰</button><div class="brand">'+TREE+'<span class="v">VILA</span><div class="a">ARBORETO</div><small>CONDOMÍNIO</small></div><button class="who" data-go="splash"><b>👤</b>Olá,<br>'+who+' ▾</button></header>';
 }
 function cards(list){
  return '<div class="grid">'+list.map(function(c){
@@ -144,6 +145,7 @@ function body(){
  var s=st.sc,h='';
  if(s==='faq')return faqView();
  if(s==='pf')return pfView();
+ if(s==='res')return resView();
  if(s==='mhome')return hero('🏠','Moradores','Facilidades e serviços para o seu dia a dia')+cards(MCARDS);
  if(s==='adm')return hero('⚙️','Administração','Gestão para um condomínio ainda melhor')+cards(ACARDS);
  if(s==='com')return '<h2>Comunicados</h2>'+box('Manutenção do elevador – Bloco B','Na quinta-feira, das 9h às 12h, o elevador ficará parado para revisão.','Publicado hoje')+box('Assembleia geral ordinária','Sábado, às 19h, no salão de festas. Sua presença é importante.','Publicado ontem')+box('Coleta seletiva','A coleta de recicláveis passa às terças e sextas pela manhã.','Há 3 dias')+'<p class="note">Avisos de exemplo para testar o layout.</p>';
@@ -767,13 +769,13 @@ function render(){
  }
  var nav=st.role==='adm'?ANAV:MNAV;
  var act=st.sc;
- if(st.role==='adm'&&['fin','con','fra','ale','tv','pf','chpw'].indexOf(act)>-1)act='adm';
- if(st.role==='mor'&&act==='mhome')act='com';
+ if(st.role==='adm'&&['fin','con','fra','ale','tv','pf','chpw','res'].indexOf(act)>-1)act='adm';
+ 
  var showBack=['mhome','adm','ass','age','tar','aud'].indexOf(st.sc)<0;
  app.innerHTML=head()+banner()+'<main>'+(showBack?back():'')+body()+extra()+'</main><nav class="nav">'+nav.map(function(n){return '<button data-go="'+n[0]+'"'+(n[0]===act?' class="on"':'')+'><span>'+n[2]+'</span>'+n[1]+'</button>'}).join('')+'</nav>';
 }
 app.addEventListener('click',function(e){
- var el=e.target.closest('[data-go],[data-role],[data-act],[data-task],[data-vid],[data-fdel],[data-pdel],[data-ech],[data-tvi],[data-tvdel],[data-gdel],[data-ktask],[data-kdel],[data-qans],[data-qdis],[data-qdel],[data-mdel],[data-medit],[data-mtp]');
+ var el=e.target.closest('[data-go],[data-role],[data-act],[data-task],[data-vid],[data-fdel],[data-pdel],[data-ech],[data-tvi],[data-tvdel],[data-gdel],[data-ktask],[data-kdel],[data-qans],[data-qdis],[data-qdel],[data-mdel],[data-medit],[data-mtp],[data-rdel]');
  if(!el)return;
  if(el.dataset.role){if(el.dataset.role==='adm'&&window.ME&&window.ME.role==='morador'){return;}if(el.dataset.role==='adm'&&!st.user){LG.msg='';st.sc='login';}else{st.role=el.dataset.role;st.sc=st.role==='adm'?'adm':'mhome';}}
  else if(el.dataset.go){st.sc=el.dataset.go;if(st.sc==='splash'){st.role=null;M=[];}}
@@ -790,6 +792,7 @@ app.addEventListener('click',function(e){
  else if(el.dataset.pdel){P.items=P.items.filter(function(i){return i.id!==el.dataset.pdel});P.dirty=true;P.msg='Toque em Salvar para registrar.';}
  else if(el.dataset.act==='psave'){psave();return;}
  else if(el.dataset.act==='retro'){retroPlay();return;}
+ else if(el.dataset.rdel){rDel(el.dataset.rdel);return;}
  else if(el.dataset.act==='mtoggle'){MN.form=!MN.form;MN.edit=null;MN.msg='';}
  else if(el.dataset.act==='mcancel'){MN.form=false;MN.edit=null;}
  else if(el.dataset.act==='msave'){mSave();return;}
@@ -914,7 +917,8 @@ function basicMarcelo(tx){
  return 'Ainda estou aprendendo a conversar livremente, '+ap+'. Por enquanto posso falar das prioridades do dia, do saldo, das tarefas, da agenda, dos prestadores, das perguntas dos moradores, dos alertas e da TV. O que você prefere?';
 }
 window.__onMe=function(me){
- if(me.role==='adm'){var u=USERS[me.id];st.user={id:me.id,nome:u.nome,ap:u.ap,cargo:u.cargo,def:false};AU.uid='u:'+me.id;memLoad(me.id);}
+ if(me.role==='adm'){var u=USERS[me.id];st.user={id:me.id,nome:u.nome,ap:u.ap,cargo:u.cargo,def:false};AU.uid='u:'+me.id;memLoad(me.id);st.role='adm';st.sc='adm';}
+ else{st.role='mor';st.sc='mhome';}
  render();
 };
 
@@ -982,10 +986,58 @@ async function mDel(id){
 })();
 
 </script>
+<script>
+
+var RS={items:[],q:''};
+function rList(){
+ var q=norm(RS.q),l=RS.items.filter(function(x){return !q||norm((x.nome||'')+' '+(x.apto||'')).indexOf(q)>-1}).sort(function(a,b){return (a.apto||'')<(b.apto||'')?-1:1});
+ if(!l.length)return '<p class="note">'+(RS.items.length?'Nenhum morador encontrado.':'Nenhum morador cadastrado ainda.')+'</p>';
+ return l.map(function(x){return '<div class="box frow"><div><h4>'+esc(x.nome||'')+'</h4><small>'+esc(x.apto||'')+'</small></div><button class="del" data-rdel="'+esc(x.id)+'" aria-label="Remover morador">🗑</button></div>'}).join('');
+}
+function resView(){
+ return '<h2>Moradores</h2><p class="note" style="margin:0 0 8px;text-align:left">Cadastrados pelo app: '+RS.items.length+'</p><input id="rq" placeholder="Buscar por nome, bloco ou apartamento" value="'+esc(RS.q)+'" autocomplete="off"><div id="rl" style="margin-top:10px">'+rList()+'</div><p class="note">Para dar o código do condomínio aos moradores, fale com a administração.</p>';
+}
+async function rDel(id){
+ var x=RS.items.filter(function(i){return i.id===id})[0];if(!x||!AU.db)return;
+ if(!window.confirm('Remover o acesso de '+(x.nome||'este morador')+'?'))return;
+ try{await AU.db.doc('usuarios/'+id).delete();audit('Moradores','Removeu morador',(x.nome||'')+' — '+(x.apto||''));}catch(e){}
+}
+document.getElementById('app').addEventListener('input',function(e){
+ if(e.target&&e.target.id==='rq'){RS.q=e.target.value;var l=document.getElementById('rl');if(l)l.innerHTML=rList();}
+});
+(function(){
+ if(window.claude&&claude.use){claude.use('db').then(function(db){if(!db)return;
+  db.collection('usuarios').onSnapshot(function(sn){RS.items=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())}).filter(function(x){return x.role==='morador'});if(st.sc==='res'&&!RS.q)render()},function(){});
+ }).catch(function(){})}
+})();
+
+</script>
+<script>
+
+var PW={msg:''};
+function extra(){
+ if(st.sc!=='adm'||!st.user)return '';
+ return (st.user.id==='alessandra'?retroCard():'')+'<button class="back" data-go="chpw" style="width:100%;margin-top:8px">🔑 Alterar minha senha</button>';
+}
+function chpwView(){
+ var m=PW.msg;PW.msg='';
+ return '<h2>Alterar senha</h2><div class="box"><label for="cp1">Nova senha (mínimo 8 caracteres)</label><input id="cp1" type="password" autocomplete="new-password"><label for="cp2">Repita a nova senha</label><input id="cp2" type="password" autocomplete="new-password"><button class="gold" data-act="chsave">Salvar nova senha</button>'+(m?'<p class="note">'+esc(m)+'</p>':'')+'</div>';
+}
+async function doChange(){
+ var a=document.getElementById('cp1'),b=document.getElementById('cp2');if(!a||!b)return;
+ if(a.value.length<8){PW.msg='A senha precisa ter pelo menos 8 caracteres.';render();return;}
+ if(a.value==='12345678'||a.value==='123456'){PW.msg='Escolha uma senha menos óbvia.';render();return;}
+ if(a.value!==b.value){PW.msg='As senhas não são iguais.';render();return;}
+ try{await window.__changePw(a.value);audit('Acesso','Alterou a própria senha',st.user?st.user.nome:'');PW.msg='Senha alterada com sucesso.';}
+ catch(e){PW.msg=(e&&String(e.code).indexOf('requires-recent-login')>-1)?'Por segurança, saia da conta, entre de novo e tente outra vez.':'Não foi possível alterar a senha.';}
+ render();
+}
+
+</script>
 <script type="module">
 
 import {initializeApp} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
-import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,sendPasswordResetEmail,deleteUser} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,sendPasswordResetEmail,deleteUser,updatePassword} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,deleteDoc,onSnapshot,collection,query,orderBy,limit} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -999,7 +1051,7 @@ const firebaseConfig = {
 const app=initializeApp(firebaseConfig),auth=getAuth(app),fdb=getFirestore(app);
 
 // Administradores (identificados pelo hash do e-mail; os e-mails ficam só em firestore.rules)
-const ADMINS={'463fd5fa5a1acfae3c4e7ef3a4827505d37b05eae0f8ac94769ab05e189eaff0':'rodrigo','bd7274e1b05e003d7e46f4bc7b7edc17e30b26b574330cbd3bfa23959ff85735':'alessandra'};
+const ADMINS={'bdc34b2fc07b58f5e406f57e215aa45f71aea3102c704fa48407b37ba0393eba':'rodrigo','0cac9b3c8058d1903204f31bbdfdfb0ec0e88c0f8ff15d46213e7bcc7be274eb':'alessandra'};
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 
 function snapD(s){return{exists:s.exists(),data:()=>s.data()}}
@@ -1036,13 +1088,14 @@ const api={
   profiles:async ids=>{const o={};for(const i of ids){try{const s=await getDoc(doc(fdb,'usuarios',i));o[i]={name:s.exists()?s.data().nome:''}}catch(e){o[i]={name:''}}}return o}}
 };
 window.__signout=()=>signOut(auth).then(()=>location.reload());
+window.__changePw=async np=>{await updatePassword(auth.currentUser,np);try{localStorage.removeItem('va_mc_'+auth.currentUser.uid)}catch(e){}};
 
 const gate=document.getElementById('gate');
-let mode='load',msg='',busy=false,signing=false,started=false;const vals={};
+let mode='load',msg='',busy=false,signing=false,started=false,pendingDefault=false;const vals={};
 const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function snap(){['ge','gn','ga','gc'].forEach(i=>{const e=document.getElementById(i);if(e)vals[i]=e.value.trim()})}
+function snap(){['ge','gn','ga','gb','gc'].forEach(i=>{const e=document.getElementById(i);if(e)vals[i]=e.value.trim()})}
 function authMsg(e){const c=(e&&e.code)||'';
- if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c))return 'E-mail ou senha incorretos.';
+ if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c))return 'Usuário ou senha incorretos.';
  if(c.includes('email-already-in-use'))return 'Este e-mail já tem conta. Toque em “Já tenho conta”.';
  if(c.includes('weak-password'))return 'A senha precisa ter pelo menos 6 caracteres.';
  if(c.includes('invalid-email'))return 'Esse e-mail não parece válido.';
@@ -1053,29 +1106,41 @@ function draw(){
  gate.hidden=false;let f='';
  const v=i=>E(vals[i]||'');
  if(mode==='load')f='<p class="gn">Carregando…</p>';
- else if(mode==='in')f=`<label for="ge">E-mail</label><input id="ge" type="email" autocomplete="email" value="${v('ge')}"><label for="gp">Senha</label><input id="gp" type="password" autocomplete="current-password"><button class="gb" data-g="in"${busy?' disabled':''}>${busy?'Entrando…':'Entrar'}</button><button class="gl" data-g="forgot">Esqueci minha senha</button><button class="gl" data-g="goreg">Primeiro acesso de morador</button>`;
- else f=`<label for="gn">Nome completo</label><input id="gn" autocomplete="name" value="${v('gn')}"><label for="ga">Apartamento (ex.: Bloco B, 302)</label><input id="ga" value="${v('ga')}"><label for="gc">Código do condomínio</label><input id="gc" autocomplete="off" value="${v('gc')}"><label for="ge">E-mail</label><input id="ge" type="email" autocomplete="email" value="${v('ge')}"><label for="gp">Crie uma senha (mínimo 6 caracteres)</label><input id="gp" type="password" autocomplete="new-password"><button class="gb" data-g="reg">Criar minha conta</button><button class="gl" data-g="goin">Já tenho conta</button>`;
+ else if(mode==='in')f=`<label for="ge">Usuário ou e-mail</label><input id="ge" type="text" autocapitalize="none" autocomplete="username" value="${v('ge')}"><label for="gp">Senha</label><input id="gp" type="password" autocomplete="current-password"><button class="gb" data-g="in"${busy?' disabled':''}>${busy?'Entrando…':'Entrar'}</button><button class="gl" data-g="forgot">Esqueci minha senha</button><button class="gl" data-g="goreg">Primeiro acesso de morador</button>`;
+ else if(mode==='force')f=`<p style="text-align:center">Primeiro acesso: crie uma senha só sua. A senha padrão é fraca e não pode continuar.</p><label for="fp1">Nova senha (mínimo 8 caracteres)</label><input id="fp1" type="password" autocomplete="new-password"><label for="fp2">Repita a nova senha</label><input id="fp2" type="password" autocomplete="new-password"><button class="gb" data-g="force">Salvar nova senha</button><button class="gl" data-g="out">Sair</button>`;
+ else f=`<label for="gn">Nome completo</label><input id="gn" autocomplete="name" value="${v('gn')}"><label for="gb">Bloco</label><input id="gb" value="${v('gb')}" placeholder="Ex.: B"><label for="ga">Apartamento</label><input id="ga" value="${v('ga')}" placeholder="Ex.: 302"><label for="gc">Código do condomínio</label><input id="gc" autocomplete="off" value="${v('gc')}"><label for="ge">E-mail</label><input id="ge" type="email" autocomplete="email" value="${v('ge')}"><label for="gp">Crie uma senha (mínimo 6 caracteres)</label><input id="gp" type="password" autocomplete="new-password"><button class="gb" data-g="reg">Criar minha conta</button><button class="gl" data-g="goin">Já tenho conta</button>`;
  gate.innerHTML=`<div class="gbox"><div class="gtop">🌳<div class="gv">VILA</div><div class="ga2">ARBORETO</div><small>CONDOMÍNIO</small></div><div class="gform">${f}${msg?`<p class="gm">${E(msg)}</p>`:''}</div></div>`;
 }
+function mustChange(u){try{if(pendingDefault)localStorage.setItem('va_mc_'+u.uid,'1');return !!localStorage.getItem('va_mc_'+u.uid)}catch(e){return pendingDefault}}
+async function doForce(){
+ const a=document.getElementById('fp1'),b=document.getElementById('fp2'),n=a?a.value:'',m2=b?b.value:'';
+ if(n.length<8){msg='A senha precisa ter pelo menos 8 caracteres.';draw();return}
+ if(n==='123456'||n==='12345678'){msg='Escolha uma senha menos óbvia.';draw();return}
+ if(n!==m2){msg='As senhas não são iguais.';draw();return}
+ try{await updatePassword(auth.currentUser,n);try{localStorage.removeItem('va_mc_'+auth.currentUser.uid)}catch(e){}pendingDefault=false;msg='';await proceed(auth.currentUser)}
+ catch(e){msg='Não foi possível salvar a senha. Saia e entre de novo.';draw()}
+}
+const toEmail=t=>{t=(t||'').trim();if(t.includes('@'))return t;return t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'')+'@vila-arboreto.app'};
 async function proceed(u){
  if(started)return;
  const em=(u.email||'').toLowerCase(),eh=await sha(em);let me=null;
  if(ADMINS[eh])me={role:'adm',id:ADMINS[eh]};
  else{try{const s=await getDoc(doc(fdb,'usuarios',u.uid));if(s.exists()&&s.data().role==='morador')me={role:'morador',id:u.uid,nome:s.data().nome,apto:s.data().apto}}catch(e){}}
  if(!me){msg='Esta conta não tem acesso ao app. Use o primeiro acesso com o código do condomínio.';busy=false;mode='in';await signOut(auth);draw();return}
+ if(me.role==='adm'&&mustChange(u)){mode='force';msg='';busy=false;draw();return}
  started=true;gate.hidden=true;window.ME=me;
  if(window.__onMe)window.__onMe(me);
  window.__fbres(api);
 }
 async function doIn(){
- const em=vals.ge||'',pe=document.getElementById('gp'),pw=pe?pe.value:'';
- if(!em||!pw){msg='Digite o e-mail e a senha.';draw();return}
- busy=true;msg='';draw();
- try{await signInWithEmailAndPassword(auth,em,pw)}catch(e){msg=authMsg(e);busy=false;draw()}
+ const raw=vals.ge||'',em=toEmail(raw),pe=document.getElementById('gp'),pw=pe?pe.value:'';
+ if(!raw||!pw){msg='Digite o usuário (ou e-mail) e a senha.';draw();return}
+ pendingDefault=(pw==='123456');busy=true;msg='';draw();
+ try{await signInWithEmailAndPassword(auth,em,pw)}catch(e){pendingDefault=false;msg=authMsg(e);busy=false;draw()}
 }
 async function doReg(){
- const nome=vals.gn||'',apto=vals.ga||'',cod=vals.gc||'',em=vals.ge||'',pe=document.getElementById('gp'),pw=pe?pe.value:'';
- if(!nome||!apto||!cod||!em||pw.length<6){msg='Preencha todos os campos. A senha precisa de pelo menos 6 caracteres.';draw();return}
+ const nome=vals.gn||'',bloco=vals.gb||'',apt=vals.ga||'',apto='Bloco '+bloco+', Apto '+apt,cod=vals.gc||'',em=vals.ge||'',pe=document.getElementById('gp'),pw=pe?pe.value:'';
+ if(!nome||!bloco||!apt||!cod||!em||pw.length<6){msg='Preencha todos os campos. A senha precisa de pelo menos 6 caracteres.';draw();return}
  signing=true;msg='';
  try{
   const cr=await createUserWithEmailAndPassword(auth,em,pw);
@@ -1087,6 +1152,7 @@ async function doReg(){
 async function doForgot(){
  const em=vals.ge||'';
  if(!em){msg='Digite o seu e-mail acima e toque de novo.';draw();return}
+ if(!em.includes('@')){msg='Para Rodrigo e Alessandra, a senha só pode ser redefinida por quem cuida do Firebase do condomínio.';draw();return}
  try{await sendPasswordResetEmail(auth,em)}catch(e){}
  msg='Se esse e-mail tiver conta, enviamos o link para criar uma nova senha.';draw();
 }
@@ -1097,8 +1163,11 @@ gate.addEventListener('click',async e=>{
  else if(a==='in')await doIn();
  else if(a==='reg')await doReg();
  else if(a==='forgot')await doForgot();
+ else if(a==='force')await doForce();
+ else if(a==='out')await signOut(auth).then(()=>location.reload());
 });
-gate.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='gp'){e.preventDefault();snap();(mode==='in'?doIn:doReg)()}});
+gate.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='fp2'){e.preventDefault();doForce();return}
+ if(e.key==='Enter'&&e.target.id==='gp'){e.preventDefault();snap();(mode==='in'?doIn:doReg)()}});
 onAuthStateChanged(auth,async u=>{
  if(signing)return;
  if(!u){if(mode==='load')mode='in';draw();return}
