@@ -123,9 +123,8 @@ var ACARDS=[
  ['fin','🧾','Gastos esporádicos','Compras do dia a dia e quanto tempo cada item dura.'],
  ['con','📒','Contatos de Prestadores e Fornecedores','Lista de empresas, serviços e fornecedores.'],
  ['fra','💡','Frases Motivacionais Diárias','Mensagens que inspiram um condomínio mais unido e feliz.'],
- ['ale','⚠️','Alerta Rápido','Emergências e situações urgentes.'],
  ['tv','📺','TV Arboreto','Comunicados, notícias e entretenimento.'],
- ['pf','📘','Manual do Morador','Escreva o manual e responda as perguntas dos moradores.'],
+ ['pf','📘','Manual do Morador','Escreva as perguntas e respostas que os moradores vão encontrar.'],
  ['res','👥','Moradores','Moradores cadastrados, com bloco e apartamento.']];
 var MNAV=[['mhome','Início','🏠'],['com','Comunicados','📢'],['acc','Controle de Acesso','🚪'],['faq','Manual','📘'],['ouv','Ouvidoria','💬']];
 var ANAV=[['ass','Assistente','🎙️'],['age','Agenda','📅'],['tar','Tarefas','✅'],['adm','Administração','⚙️'],['aud','Auditoria','🔒']];
@@ -905,7 +904,6 @@ function basicMarcelo(tx){
   if(pa)bits.push(pa+(pa>1?' cadastros de moradores aguardando aprovação':' cadastro de morador aguardando aprovação'));
   var rp0=(window.xRepor?xRepor():[]);
   if(rp0.length)bits.push('pode ser hora de repor: '+rp0.slice(0,3).join(', '));
-  if(pq)bits.push(pq+(pq>1?' perguntas de moradores esperando resposta':' pergunta de morador esperando resposta'));
   return per+', '+ap+'! Que bom ter você aqui. '+(bits.length?'As prioridades de hoje: '+bits.join('. ')+'. ':'Hoje o dia está tranquilo, sem nada urgente. ')+'Em que posso ajudar?';
  }
  if(/saldo|financ|gasto|despesa|compra|repor|acabando|estoque/.test(t)){
@@ -922,7 +920,6 @@ function basicMarcelo(tx){
   var m=P.items.filter(function(i){return t.indexOf(norm(i.s))>-1&&i.s||t.indexOf(norm(i.n))>-1}).slice(0,3).map(function(i){return i.n+', '+i.p});
   return m.length?m.join('; ')+'.':(P.items.length?'Você tem '+P.items.length+' prestadores cadastrados. Veja a lista na tela de contatos.':'Ainda não há prestadores cadastrados.');
  }
- if(/pergunta|duvida|dúvida/.test(t))return pq?'Há '+pq+(pq>1?' perguntas de moradores':' pergunta de morador')+' esperando resposta, na aba Manual do Morador.':'Nenhuma pergunta de morador esperando resposta.';
  if(/alerta|emerg/.test(t))return A.cur&&A.cur.ativo?'Há um alerta ativo: '+A.cur.tipo+'.':'Não há nenhum alerta ativo no momento.';
  if(/video|vídeo|tv/.test(t))return T.items.length?'O último vídeo na TV Arboreto é '+T.items[0].t+'.':'Ainda não há vídeos na TV Arboreto.';
  if(/obrigad/.test(t))return 'Por nada, '+ap+'! É um prazer ajudar.';
@@ -1144,6 +1141,37 @@ function xSave(){
   db.doc('financas/gastos').onSnapshot(function(sn){if(X.dirty)return;var x=sn.exists&&sn.data();if(x&&x.items){X.items=x.items;X.saved=x.items.slice();if(st.sc==='fin'&&!X.form)render()}},function(){});
  }).catch(function(){})}
 })();
+
+</script>
+<script>
+
+MN.q='';
+function mList(q){
+ q=norm(q);
+ var l=MN.items.filter(function(c){return !q||norm(c.t+' '+c.d).indexOf(q)>-1});
+ if(!l.length)return '<p class="note">'+(MN.items.length?'Nada encontrado. Tente outra palavra.':'O manual está sendo preparado pela administração.')+'</p>';
+ return l.map(function(c){return '<details><summary>'+esc(c.t)+'</summary><p>'+esc(c.d).replace(/\n/g,'<br>')+'</p></details>'}).join('');
+}
+function faqView(){
+ return '<h2>Manual do Morador</h2><input id="mq" placeholder="Buscar no manual (ex.: silêncio)" autocomplete="off" value="'+esc(MN.q)+'"><div id="ml" style="margin-top:10px">'+mList(MN.q)+'</div>';
+}
+document.getElementById('app').addEventListener('input',function(e){
+ if(e.target&&e.target.id==='mq'){MN.q=e.target.value;var l=document.getElementById('ml');if(l)l.innerHTML=mList(MN.q);}
+});
+function pfView(){
+ var h='<h2>Manual do Morador</h2><p class="note" style="margin:0 0 8px;text-align:left">Escreva as perguntas e as respostas que os moradores vão encontrar. Quando o morador tocar na pergunta, a resposta aparece.</p><div class="cat">Perguntas e respostas ('+MN.items.length+')</div>';
+ if(MN.form){
+  var cur=MN.edit?MN.items.filter(function(x){return x.id===MN.edit})[0]:null;
+  h+='<div class="box"><label for="mt">Pergunta ou assunto</label><input id="mt" maxlength="80" value="'+esc(cur?cur.t:'')+'" placeholder="Ex.: Qual o horário de silêncio?">';
+  if(!cur)h+='<div class="chips" style="margin-top:8px">'+MTP.map(function(t){return '<button class="chip" data-mtp="'+esc(t)+'">'+esc(t)+'</button>'}).join('')+'</div>';
+  h+='<label for="md">Resposta</label><textarea id="md" rows="7" maxlength="3000" placeholder="Escreva a resposta que o morador vai ver ao tocar na pergunta.">'+esc(cur?cur.d:'')+'</textarea><button class="gold" data-act="msave">Salvar e publicar</button><button class="back" data-act="mcancel" style="width:100%;margin-top:6px">Cancelar</button></div>';
+ }
+ if(!MN.items.length&&!MN.form)h+='<p class="note">Nada por aqui ainda. Toque em + para escrever a primeira pergunta e resposta.</p>';
+ MN.items.forEach(function(c){h+='<div class="box frow"><div><h4>'+esc(c.t)+'</h4><p>'+esc(c.d.length>90?c.d.slice(0,90)+'…':c.d)+'</p></div><button class="del" data-medit="'+esc(c.id)+'" aria-label="Editar">✏️</button><button class="del" data-mdel="'+esc(c.id)+'" aria-label="Excluir">🗑</button></div>'});
+ if(MN.msg)h+='<p class="note">'+esc(MN.msg)+'</p>';
+ if(!MN.form)h+='<button class="fab" data-act="mtoggle" aria-label="Nova pergunta e resposta">+</button>';
+ return h;
+}
 
 </script>
 <script type="module">
