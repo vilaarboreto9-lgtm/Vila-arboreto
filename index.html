@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vila Arboreto</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
 <meta name="theme-color" content="#0b3d24">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -119,7 +120,7 @@ var MCARDS=[
  ['ouv','💬','Ouvidoria','Canal para sugestões, reclamações e solicitações dos moradores.'],
  ['tv','📺','TV Arboreto','Vídeos e novidades do condomínio.']];
 var ACARDS=[
- ['fin','🪙','Finanças','Receitas, despesas, boletos e relatórios financeiros.'],
+ ['fin','🧾','Gastos esporádicos','Compras do dia a dia e quanto tempo cada item dura.'],
  ['con','📒','Contatos de Prestadores e Fornecedores','Lista de empresas, serviços e fornecedores.'],
  ['fra','💡','Frases Motivacionais Diárias','Mensagens que inspiram um condomínio mais unido e feliz.'],
  ['ale','⚠️','Alerta Rápido','Emergências e situações urgentes.'],
@@ -639,7 +640,7 @@ function retroStats(y,m){
  var its=AU.items.filter(function(e){return e.uid==='u:alessandra'&&e.ts>=from&&e.ts<to});
  var c=function(sec,ac){return its.filter(function(e){return e.sec===sec&&e.acao===ac}).length},days={};
  its.forEach(function(e){days[new Date(e.ts).getDate()]=1});
- return{tarefasConcluidas:c('Tarefas','Concluiu'),tarefasCriadas:c('Tarefas','Adicionou'),lancamentos:c('Finanças','Adicionou'),compromissos:c('Agenda','Adicionou'),prestadores:c('Prestadores','Adicionou'),videosTV:c('TV Arboreto','Publicou vídeo'),perguntasRespondidas:c('Perguntas','Respondeu'),alertasEnviados:c('Alerta Rápido','Enviou alerta'),diasAtivos:Object.keys(days).length};
+ return{tarefasConcluidas:c('Tarefas','Concluiu'),tarefasCriadas:c('Tarefas','Adicionou'),lancamentos:c('Gastos esporádicos','Adicionou'),compromissos:c('Agenda','Adicionou'),prestadores:c('Prestadores','Adicionou'),videosTV:c('TV Arboreto','Publicou vídeo'),perguntasRespondidas:c('Perguntas','Respondeu'),alertasEnviados:c('Alerta Rápido','Enviou alerta'),diasAtivos:Object.keys(days).length};
 }
 async function retroMsg(s,y,m){
  var mes=new Date(y,m,1).toLocaleDateString('pt-BR',{month:'long'}),fb='Ale, cada tarefa, cada registro e cada resposta mostram o carinho com que você cuida do Vila Arboreto. Obrigado por fazer deste lugar um lar melhor para todos. Continue, porque o seu trabalho faz diferença todos os dias.';
@@ -723,7 +724,7 @@ function retroSlides2(s,y,m,x){
  if(s.tarefasConcluidas>0)L.push(num(s.tarefasConcluidas,'tarefas concluídas','Cada uma tirou um peso das costas do condomínio.',x.feitas));
  if(s.tarefasCriadas>0)L.push(num(s.tarefasCriadas,'tarefas planejadas','Planejar é uma forma de cuidar.',x.criadas));
  if(s.compromissos>0)L.push(num(s.compromissos,'compromissos agendados','Tempo bem organizado, vida mais tranquila.',x.agenda));
- if(s.lancamentos>0)L.push(num(s.lancamentos,'lançamentos financeiros registrados','Transparência que dá confiança aos moradores.'));
+ if(s.lancamentos>0)L.push(num(s.lancamentos,'compras registradas nos gastos do condomínio','Controle que ajuda o condomínio a gastar melhor.'));
  if(s.prestadores>0)L.push(num(s.prestadores,'contatos de prestadores cadastrados','Ajuda certa na hora certa.'));
  x.vids.forEach(function(v){L.push('<div class="s"><p class="rtk">VOCÊ COMPARTILHOU</p><img class="clip" alt="" src="https://img.youtube.com/vi/'+esc(v.yt)+'/hqdefault.jpg"><h2>'+esc(v.t)+'</h2><p>Momentos que aproximam quem mora aqui.</p></div>')});
  if(s.videosTV>0)L.push(num(s.videosTV,'vídeos publicados na TV Arboreto','Levando alegria e informação para dentro das casas.'));
@@ -775,7 +776,7 @@ function render(){
  app.innerHTML=head()+banner()+'<main>'+(showBack?back():'')+body()+extra()+'</main><nav class="nav">'+nav.map(function(n){return '<button data-go="'+n[0]+'"'+(n[0]===act?' class="on"':'')+'><span>'+n[2]+'</span>'+n[1]+'</button>'}).join('')+'</nav>';
 }
 app.addEventListener('click',function(e){
- var el=e.target.closest('[data-go],[data-role],[data-act],[data-task],[data-vid],[data-fdel],[data-pdel],[data-ech],[data-tvi],[data-tvdel],[data-gdel],[data-ktask],[data-kdel],[data-qans],[data-qdis],[data-qdel],[data-mdel],[data-medit],[data-mtp],[data-rdel]');
+ var el=e.target.closest('[data-go],[data-role],[data-act],[data-task],[data-vid],[data-fdel],[data-pdel],[data-ech],[data-tvi],[data-tvdel],[data-gdel],[data-ktask],[data-kdel],[data-qans],[data-qdis],[data-qdel],[data-mdel],[data-medit],[data-mtp],[data-rdel],[data-rok],[data-rno],[data-xdel]');
  if(!el)return;
  if(el.dataset.role){if(el.dataset.role==='adm'&&window.ME&&window.ME.role==='morador'){return;}if(el.dataset.role==='adm'&&!st.user){LG.msg='';st.sc='login';}else{st.role=el.dataset.role;st.sc=st.role==='adm'?'adm':'mhome';}}
  else if(el.dataset.go){st.sc=el.dataset.go;if(st.sc==='splash'){st.role=null;M=[];}}
@@ -792,6 +793,12 @@ app.addEventListener('click',function(e){
  else if(el.dataset.pdel){P.items=P.items.filter(function(i){return i.id!==el.dataset.pdel});P.dirty=true;P.msg='Toque em Salvar para registrar.';}
  else if(el.dataset.act==='psave'){psave();return;}
  else if(el.dataset.act==='retro'){retroPlay();return;}
+ else if(el.dataset.act==='xtoggle'){X.form=!X.form;}
+ else if(el.dataset.act==='xadd'){xAdd();}
+ else if(el.dataset.xdel){X.items=X.items.filter(function(i){return i.id!==el.dataset.xdel});X.dirty=true;X.msg='Toque em Salvar e enviar para registrar.';}
+ else if(el.dataset.act==='xsave'){xSave();return;}
+ else if(el.dataset.rok){rOk(el.dataset.rok);return;}
+ else if(el.dataset.rno){rNo(el.dataset.rno);return;}
  else if(el.dataset.rdel){rDel(el.dataset.rdel);return;}
  else if(el.dataset.act==='mtoggle'){MN.form=!MN.form;MN.edit=null;MN.msg='';}
  else if(el.dataset.act==='mcancel'){MN.form=false;MN.edit=null;}
@@ -894,12 +901,17 @@ function basicMarcelo(tx){
   if(alta.length)bits.push(alta.length+(alta.length>1?' tarefas':' tarefa')+' de prioridade alta: '+list(alta));
   if(eh.length)bits.push('hoje você tem '+list(eh));
   if(ea.length)bits.push('amanhã: '+list(ea));
+  var pa=(window.RS?RS.items.filter(function(x){return x.status!=='aprovado'}).length:0);
+  if(pa)bits.push(pa+(pa>1?' cadastros de moradores aguardando aprovação':' cadastro de morador aguardando aprovação'));
+  var rp0=(window.xRepor?xRepor():[]);
+  if(rp0.length)bits.push('pode ser hora de repor: '+rp0.slice(0,3).join(', '));
   if(pq)bits.push(pq+(pq>1?' perguntas de moradores esperando resposta':' pergunta de morador esperando resposta'));
   return per+', '+ap+'! Que bom ter você aqui. '+(bits.length?'As prioridades de hoje: '+bits.join('. ')+'. ':'Hoje o dia está tranquilo, sem nada urgente. ')+'Em que posso ajudar?';
  }
- if(/saldo|financ|gasto|despesa|receita/.test(t)){
-  var r=0,d=0;F.items.forEach(function(i){if(i.t==='r')r+=i.v;else d+=i.v});
-  return F.items.length?'Receitas de '+brl(r)+', despesas de '+brl(d)+' e saldo de '+brl(r-d)+', com '+F.items.length+(F.items.length>1?' lançamentos registrados.':' lançamento registrado.'):'Ainda não há lançamentos registrados em Finanças.';
+ if(/saldo|financ|gasto|despesa|compra|repor|acabando|estoque/.test(t)){
+  var ym=todayISO().slice(0,7),mm=X.items.filter(function(i){return i.d.slice(0,7)===ym}),tm=mm.reduce(function(q,i){return q+i.v},0),rp=xRepor();
+  if(!X.items.length)return 'Ainda não há compras registradas em Gastos esporádicos.';
+  return 'Neste mês foram '+mm.length+(mm.length===1?' compra':' compras')+', somando '+brl(tm)+'.'+(rp.length?' Pode ser hora de repor: '+rp.slice(0,4).join(', ')+'.':' Nada precisando de reposição agora.');
  }
  if(/tarefa/.test(t))return pend.length?'Você tem '+pend.length+(pend.length>1?' tarefas pendentes':' tarefa pendente')+'. As principais: '+list(pend.sort(function(a,b){return ({a:0,m:1,b:2}[a.p])-({a:0,m:1,b:2}[b.p])}).map(function(x){return x.t}))+'.':'Nenhuma tarefa pendente. Parabéns, '+ap+'!';
  if(/agenda|compromiss|reuni/.test(t)){
@@ -1007,13 +1019,14 @@ document.getElementById('app').addEventListener('input',function(e){
 });
 (function(){
  if(window.claude&&claude.use){claude.use('db').then(function(db){if(!db)return;
-  db.collection('usuarios').onSnapshot(function(sn){RS.items=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())}).filter(function(x){return x.role==='morador'});if(st.sc==='res'&&!RS.q)render()},function(){});
+  db.collection('usuarios').onSnapshot(function(sn){RS.items=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())}).filter(function(x){return x.role==='morador'});if((st.sc==='res'&&!RS.q)||st.sc==='adm')render()},function(){});
  }).catch(function(){})}
 })();
 
 </script>
 <script>
 
+USERS.admin={nome:'Administração',ap:'equipe',cargo:'Administração',tmp:''};
 var PW={msg:''};
 function extra(){
  if(st.sc!=='adm'||!st.user)return '';
@@ -1034,6 +1047,105 @@ async function doChange(){
 }
 
 </script>
+<script>
+
+function rPend(){return RS.items.filter(function(x){return x.status!=='aprovado'})}
+function rList(){
+ var q=norm(RS.q),l=RS.items.filter(function(x){return x.status==='aprovado'&&(!q||norm((x.nome||'')+' '+(x.apto||'')).indexOf(q)>-1)}).sort(function(a,b){return (a.apto||'')<(b.apto||'')?-1:1});
+ if(!l.length)return '<p class="note">'+(RS.q?'Nenhum morador encontrado.':'Nenhum morador aprovado ainda.')+'</p>';
+ return l.map(function(x){return '<div class="box frow"><div><h4>'+esc(x.nome||'')+'</h4><small>'+esc(x.apto||'')+'</small></div><button class="del" data-rdel="'+esc(x.id)+'" aria-label="Remover morador">🗑</button></div>'}).join('');
+}
+function resView(){
+ var pend=rPend(),ok=RS.items.length-pend.length,h='<h2>Moradores</h2><div class="cat">Aguardando aprovação ('+pend.length+')</div>';
+ if(!pend.length)h+='<p class="note">Nenhum cadastro aguardando.</p>';
+ pend.forEach(function(x){h+='<div class="box">'+(x.foto?'<img src="'+esc(x.foto)+'" alt="Foto de '+esc(x.nome||'')+'" style="width:110px;height:110px;object-fit:cover;border-radius:14px;float:right;margin:0 0 6px 10px">':'')+'<h4>'+esc(x.nome||'')+'</h4><small>'+esc(x.apto||'')+'</small><div style="display:flex;gap:8px;margin-top:10px"><button class="gold" style="margin:0;flex:1" data-rok="'+esc(x.id)+'">Aprovar</button><button class="back" style="flex:1" data-rno="'+esc(x.id)+'">Recusar</button></div></div>'});
+ h+='<div class="cat">Moradores aprovados ('+ok+')</div><input id="rq" placeholder="Buscar por nome, bloco ou apartamento" value="'+esc(RS.q)+'" autocomplete="off"><div id="rl" style="margin-top:10px">'+rList()+'</div>';
+ return h;
+}
+async function rOk(id){
+ var x=RS.items.filter(function(i){return i.id===id})[0];if(!x||!AU.db)return;
+ try{await AU.db.doc('usuarios/'+id).set({nome:x.nome||'',apto:x.apto||'',role:'morador',codigo:x.codigo||'',status:'aprovado'});audit('Moradores','Aprovou morador',(x.nome||'')+' — '+(x.apto||''));}catch(e){}
+}
+async function rNo(id){
+ var x=RS.items.filter(function(i){return i.id===id})[0];if(!x||!AU.db)return;
+ if(!window.confirm('Recusar o cadastro de '+(x.nome||'este morador')+'?'))return;
+ try{await AU.db.doc('usuarios/'+id).delete();audit('Moradores','Recusou cadastro',(x.nome||'')+' — '+(x.apto||''));}catch(e){}
+}
+function extra(){
+ if(st.sc!=='adm'||!st.user)return '';
+ var np=window.RS?rPend().length:0,h='';
+ if(np)h+='<button class="card" data-go="res" style="width:100%;min-height:0;flex-direction:row;align-items:center;gap:12px;margin-top:10px;border-color:#b3151b"><span class="e">⏳</span><div><h3>'+np+(np>1?' cadastros aguardando aprovação':' cadastro aguardando aprovação')+'</h3><p>Toque para conferir e aprovar.</p></div></button>';
+ return h+(st.user.id==='alessandra'?retroCard():'')+'<button class="back" data-go="chpw" style="width:100%;margin-top:8px">🔑 Alterar minha senha</button>';
+}
+
+</script>
+<script>
+
+var X={items:[],form:false,dirty:false,msg:'',db:null,saved:null};
+function todayISO(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')}
+function dBR(d){return d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(0,4)}
+function xDays(a,b){return Math.round((Date.UTC(+b.slice(0,4),+b.slice(5,7)-1,+b.slice(8,10))-Date.UTC(+a.slice(0,4),+a.slice(5,7)-1,+a.slice(8,10)))/864e5)}
+function xAdd1(d,n){return new Date(Date.UTC(+d.slice(0,4),+d.slice(5,7)-1,+d.slice(8,10))+n*864e5).toISOString().slice(0,10)}
+SEC.f='Gastos esporádicos';
+function xStats(){
+ var g={};X.items.forEach(function(i){var k=norm(i.n);(g[k]=g[k]||{n:i.n,list:[]}).list.push(i)});
+ return Object.keys(g).map(function(k){
+  var o=g[k];o.list.sort(function(a,b){return a.d<b.d?-1:1});
+  var gaps=[];for(var i=1;i<o.list.length;i++){var dd=xDays(o.list[i-1].d,o.list[i].d);if(dd>0)gaps.push(dd)}
+  var tot=o.list.reduce(function(q,x){return q+x.v},0),last=o.list[o.list.length-1];
+  var avg=gaps.length?Math.round(gaps.reduce(function(a,b){return a+b},0)/gaps.length):0;
+  return{n:o.n,count:o.list.length,total:tot,avgv:tot/o.list.length,last:last.d,lastgap:gaps.length?gaps[gaps.length-1]:0,avg:avg,next:avg?xAdd1(last.d,avg):''};
+ }).sort(function(a,b){return b.total-a.total});
+}
+function xRepor(){var t=todayISO(),out=[];xStats().forEach(function(s){if(s.next&&xDays(t,s.next)<=3)out.push(s.n)});return out}
+function finView(){
+ var t=todayISO(),ym=t.slice(0,7),py=new Date(+t.slice(0,4),+t.slice(5,7)-2,1),pym=py.getFullYear()+'-'+String(py.getMonth()+1).padStart(2,'0');
+ var sum=function(m){var l=X.items.filter(function(i){return i.d.slice(0,7)===m});return{n:l.length,v:l.reduce(function(q,i){return q+i.v},0)}},cm=sum(ym),pm=sum(pym),all=X.items.reduce(function(q,i){return q+i.v},0);
+ var h='<h2>Gastos esporádicos</h2><div class="box"><div class="stat"><span>Gasto neste mês</span><b>'+brl(cm.v)+'</b></div><div class="stat"><span>Compras neste mês</span><b>'+cm.n+'</b></div><div class="stat"><span>Mês anterior</span><b>'+brl(pm.v)+'</b></div><div class="stat"><span>Total registrado</span><b>'+brl(all)+'</b></div></div>';
+ if(X.form){
+  var names=xStats().map(function(s){return s.n}),base=['Pão','Café','Açúcar','Produtos de limpeza','Saquinhos para pets','Sacos de lixo','Papel higiênico','Água'].filter(function(b){return names.map(norm).indexOf(norm(b))<0});
+  h+='<div class="box"><label for="xn">Item comprado</label><input id="xn" list="xl" maxlength="60" autocomplete="off" placeholder="Ex.: Café"><datalist id="xl">'+names.concat(base).map(function(n){return '<option value="'+esc(n)+'">'}).join('')+'</datalist><label for="xv">Valor da compra (R$)</label><input id="xv" inputmode="decimal" placeholder="0,00"><label for="xq">Quantidade (opcional)</label><input id="xq" maxlength="30" placeholder="Ex.: 2 pacotes"><label for="xd">Data da compra</label><input id="xd" type="date" value="'+t+'"><label for="xo">Observação (opcional)</label><input id="xo" maxlength="80"><button class="gold" data-act="xadd">Adicionar compra</button></div>';
+ }
+ var st2=xStats();
+ h+='<div class="cat">Itens e quanto tempo duram</div>';
+ if(!st2.length)h+='<p class="note">Nenhuma compra registrada. Toque em + para adicionar.</p>';
+ st2.forEach(function(s){
+  var dur=s.avg?'Dura em média <b>'+s.avg+' dia'+(s.avg>1?'s':'')+'</b> (última vez: '+s.lastgap+')':'Ainda sem dados de duração: registre a próxima compra.';
+  var aviso='';
+  if(s.next){var f=xDays(t,s.next);aviso=f<0?' <span style="color:#b3151b;font-weight:700">• passou da data de repor</span>':f<=3?' <span style="color:#c98a00;font-weight:700">• repor em breve</span>':'';}
+  h+='<div class="box"><h4>'+esc(s.n)+'</h4><p>'+s.count+(s.count>1?' compras':' compra')+' • total '+brl(s.total)+' • média '+brl(s.avgv)+' por compra</p><p>'+dur+'</p><small>Última compra: '+dBR(s.last)+(s.next?' • próxima prevista: '+dBR(s.next):'')+'</small>'+aviso+'</div>';
+ });
+ h+='<div class="cat">Compras registradas</div>';
+ var rows=X.items.slice().sort(function(a,b){return a.d<b.d?1:-1});
+ if(!rows.length)h+='<p class="note">Nada por aqui ainda.</p>';
+ rows.forEach(function(i){h+='<div class="box frow"><div><h4>'+esc(i.n)+(i.q?' <small>('+esc(i.q)+')</small>':'')+'</h4><small>'+dBR(i.d)+(i.o?' • '+esc(i.o):'')+'</small></div><b>'+brl(i.v)+'</b><button class="del" data-xdel="'+esc(i.id)+'" aria-label="Excluir">🗑</button></div>'});
+ h+='<button class="gold" data-act="xsave"'+(X.dirty?'':' style="opacity:.6"')+'>Salvar e enviar</button>'+(X.msg?'<p class="note">'+esc(X.msg)+'</p>':'');
+ return h+'<button class="fab" data-act="xtoggle" aria-label="Adicionar compra">'+(X.form?'×':'+')+'</button>';
+}
+function xAdd(){
+ var n=(document.getElementById('xn').value||'').trim(),v=parseFloat((document.getElementById('xv').value||'').replace(/\./g,'').replace(',','.')),d=document.getElementById('xd').value||todayISO();
+ if(!n||!(v>0)){X.msg='Escreva o item e o valor da compra.';return;}
+ X.items.push({id:'x'+Date.now()+Math.floor(Math.random()*1000),n:n,v:v,q:(document.getElementById('xq').value||'').trim(),d:d,o:(document.getElementById('xo').value||'').trim()});
+ X.dirty=true;X.form=false;X.msg='Toque em Salvar e enviar para registrar.';
+}
+function xAudit(){
+ var old=X.saved||[],oi={},ni={};
+ old.forEach(function(o){oi[o.id]=1});X.items.forEach(function(n){ni[n.id]=1;if(!oi[n.id])audit('Gastos esporádicos','Adicionou',n.n+' — '+brl(n.v)+' ('+dBR(n.d)+')')});
+ old.forEach(function(o){if(!ni[o.id])audit('Gastos esporádicos','Excluiu',o.n+' — '+brl(o.v))});
+ X.saved=X.items.slice();
+}
+function xSave(){
+ if(!X.db){try{localStorage.setItem('va_gst',JSON.stringify(X.items))}catch(e){}X.dirty=false;xAudit();X.msg='Salvo neste aparelho.';render();return;}
+ X.db.doc('financas/gastos').set({items:X.items}).then(function(){X.dirty=false;xAudit();X.msg='Gastos salvos e registrados.';render()},function(){X.msg='Não foi possível salvar. Só administradores podem registrar.';render()});
+}
+(function(){
+ try{var s0=localStorage.getItem('va_gst');if(s0)X.items=JSON.parse(s0)}catch(e){}
+ if(window.claude&&claude.use){claude.use('db').then(function(db){if(!db)return;X.db=db;
+  db.doc('financas/gastos').onSnapshot(function(sn){if(X.dirty)return;var x=sn.exists&&sn.data();if(x&&x.items){X.items=x.items;X.saved=x.items.slice();if(st.sc==='fin'&&!X.form)render()}},function(){});
+ }).catch(function(){})}
+})();
+
+</script>
 <script type="module">
 
 import {initializeApp} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
@@ -1051,7 +1163,7 @@ const firebaseConfig = {
 const app=initializeApp(firebaseConfig),auth=getAuth(app),fdb=getFirestore(app);
 
 // Administradores (identificados pelo hash do e-mail; os e-mails ficam só em firestore.rules)
-const ADMINS={'bdc34b2fc07b58f5e406f57e215aa45f71aea3102c704fa48407b37ba0393eba':'rodrigo','0cac9b3c8058d1903204f31bbdfdfb0ec0e88c0f8ff15d46213e7bcc7be274eb':'alessandra'};
+const ADMINS={'bdc34b2fc07b58f5e406f57e215aa45f71aea3102c704fa48407b37ba0393eba':'rodrigo','0cac9b3c8058d1903204f31bbdfdfb0ec0e88c0f8ff15d46213e7bcc7be274eb':'alessandra','735873acdcb5fc2a47cc6a387a9d3a2fa21203f6575902064fb5d4e22e5510c5':'admin'};
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 
 function snapD(s){return{exists:s.exists(),data:()=>s.data()}}
@@ -1091,8 +1203,9 @@ window.__signout=()=>signOut(auth).then(()=>location.reload());
 window.__changePw=async np=>{await updatePassword(auth.currentUser,np);try{localStorage.removeItem('va_mc_'+auth.currentUser.uid)}catch(e){}};
 
 const gate=document.getElementById('gate');
-let mode='load',msg='',busy=false,signing=false,started=false,pendingDefault=false;const vals={};
+let mode='load',door=null,msg='',busy=false,signing=false,started=false,pendingDefault=false,foto='',consent=false;const vals={};
 const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function shrink(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{const S=280,c=document.createElement('canvas');c.width=c.height=S;const m=Math.min(im.width,im.height),sx=(im.width-m)/2,sy=(im.height-m)/2;c.getContext('2d').drawImage(im,sx,sy,m,m,0,0,S,S);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',0.72))};im.onerror=rej;im.src=url})}
 function snap(){['ge','gn','ga','gb','gc'].forEach(i=>{const e=document.getElementById(i);if(e)vals[i]=e.value.trim()})}
 function authMsg(e){const c=(e&&e.code)||'';
  if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c))return 'Usuário ou senha incorretos.';
@@ -1106,9 +1219,12 @@ function draw(){
  gate.hidden=false;let f='';
  const v=i=>E(vals[i]||'');
  if(mode==='load')f='<p class="gn">Carregando…</p>';
- else if(mode==='in')f=`<label for="ge">Usuário ou e-mail</label><input id="ge" type="text" autocapitalize="none" autocomplete="username" value="${v('ge')}"><label for="gp">Senha</label><input id="gp" type="password" autocomplete="current-password"><button class="gb" data-g="in"${busy?' disabled':''}>${busy?'Entrando…':'Entrar'}</button><button class="gl" data-g="forgot">Esqueci minha senha</button><button class="gl" data-g="goreg">Primeiro acesso de morador</button>`;
+ else if(mode==='home')f=`<p class="gn" style="font-size:18px;margin:6px 0 14px">Como você quer entrar?</p><button class="gb" data-g="goadm">⚙️ Administração</button><button class="gb" data-g="gomor" style="margin-top:12px">👥 Moradores</button>`;
+ else if(mode==='adm')f=`<p class="gn" style="margin:0 0 4px">Administração</p><label for="ge">Usuário</label><input id="ge" type="text" autocapitalize="none" autocomplete="username" placeholder="Ex.: Alessandra" value="${v('ge')}"><label for="gp">Senha</label><input id="gp" type="password" autocomplete="current-password"><button class="gb" data-g="in"${busy?' disabled':''}>${busy?'Entrando…':'Entrar'}</button><button class="gl" data-g="home">‹ Voltar</button>`;
+ else if(mode==='morin')f=`<p class="gn" style="margin:0 0 4px">Moradores</p><label for="ge">E-mail</label><input id="ge" type="email" autocapitalize="none" autocomplete="email" value="${v('ge')}"><label for="gp">Senha</label><input id="gp" type="password" autocomplete="current-password"><button class="gb" data-g="in"${busy?' disabled':''}>${busy?'Entrando…':'Entrar'}</button><button class="gl" data-g="forgot">Esqueci minha senha</button><button class="gl" data-g="goreg">Primeiro acesso (cadastro)</button><button class="gl" data-g="home">‹ Voltar</button>`;
+ else if(mode==='pending')f=`<p style="text-align:center;font-size:18px">⏳ Cadastro enviado!</p><p style="text-align:center">A administração vai conferir o seu nome, bloco e apartamento e liberar o acesso. Volte aqui depois para ver se já foi aprovado.</p><button class="gb" data-g="recheck">Verificar agora</button><button class="gl" data-g="out">Sair</button>`;
  else if(mode==='force')f=`<p style="text-align:center">Primeiro acesso: crie uma senha só sua. A senha padrão é fraca e não pode continuar.</p><label for="fp1">Nova senha (mínimo 8 caracteres)</label><input id="fp1" type="password" autocomplete="new-password"><label for="fp2">Repita a nova senha</label><input id="fp2" type="password" autocomplete="new-password"><button class="gb" data-g="force">Salvar nova senha</button><button class="gl" data-g="out">Sair</button>`;
- else f=`<label for="gn">Nome completo</label><input id="gn" autocomplete="name" value="${v('gn')}"><label for="gb">Bloco</label><input id="gb" value="${v('gb')}" placeholder="Ex.: B"><label for="ga">Apartamento</label><input id="ga" value="${v('ga')}" placeholder="Ex.: 302"><label for="gc">Código do condomínio</label><input id="gc" autocomplete="off" value="${v('gc')}"><label for="ge">E-mail</label><input id="ge" type="email" autocomplete="email" value="${v('ge')}"><label for="gp">Crie uma senha (mínimo 6 caracteres)</label><input id="gp" type="password" autocomplete="new-password"><button class="gb" data-g="reg">Criar minha conta</button><button class="gl" data-g="goin">Já tenho conta</button>`;
+ else f=`<p class="gn" style="margin:0 0 4px">Cadastro de morador</p><label for="gn">Nome completo</label><input id="gn" autocomplete="name" value="${v('gn')}"><label for="gb">Bloco</label><input id="gb" value="${v('gb')}" placeholder="Ex.: B"><label for="ga">Apartamento</label><input id="ga" value="${v('ga')}" placeholder="Ex.: 302"><label for="gc">Código do condomínio</label><input id="gc" autocomplete="off" value="${v('gc')}"><label for="ge">E-mail</label><input id="ge" type="email" autocomplete="email" value="${v('ge')}"><label for="gp">Crie uma senha (mínimo 6 caracteres)</label><input id="gp" type="password" autocomplete="new-password"><label for="gf">Selfie (foto do seu rosto)</label><input id="gf" type="file" accept="image/*" capture="user">${foto?`<img src="${foto}" alt="Sua foto" style="width:96px;height:96px;object-fit:cover;border-radius:12px;display:block;margin:8px auto">`:''}<label style="display:flex;gap:8px;align-items:flex-start;color:var(--tx);margin-top:10px"><input id="gk" type="checkbox" style="width:20px;height:20px;flex:none;margin-top:2px"${consent?' checked':''}><span style="font-size:13px">Concordo em enviar minha foto à administração, só para confirmar quem sou. Ela fica visível apenas para a administração e é apagada quando o meu cadastro for aprovado.</span></label><button class="gb" data-g="reg">Criar minha conta</button><button class="gl" data-g="goin">Já tenho conta</button><button class="gl" data-g="home">‹ Voltar</button>`;
  gate.innerHTML=`<div class="gbox"><div class="gtop">🌳<div class="gv">VILA</div><div class="ga2">ARBORETO</div><small>CONDOMÍNIO</small></div><div class="gform">${f}${msg?`<p class="gm">${E(msg)}</p>`:''}</div></div>`;
 }
 function mustChange(u){try{if(pendingDefault)localStorage.setItem('va_mc_'+u.uid,'1');return !!localStorage.getItem('va_mc_'+u.uid)}catch(e){return pendingDefault}}
@@ -1125,52 +1241,66 @@ async function proceed(u){
  if(started)return;
  const em=(u.email||'').toLowerCase(),eh=await sha(em);let me=null;
  if(ADMINS[eh])me={role:'adm',id:ADMINS[eh]};
- else{try{const s=await getDoc(doc(fdb,'usuarios',u.uid));if(s.exists()&&s.data().role==='morador')me={role:'morador',id:u.uid,nome:s.data().nome,apto:s.data().apto}}catch(e){}}
- if(!me){msg='Esta conta não tem acesso ao app. Use o primeiro acesso com o código do condomínio.';busy=false;mode='in';await signOut(auth);draw();return}
+ else{try{const s=await getDoc(doc(fdb,'usuarios',u.uid));if(s.exists()&&s.data().role==='morador')me={role:'morador',id:u.uid,nome:s.data().nome,apto:s.data().apto,status:s.data().status||''}}catch(e){}}
+ if(!me){msg='Esta conta não tem acesso ao app. Moradores: use o primeiro acesso com o código do condomínio.';busy=false;mode=door==='adm'?'adm':'morin';await signOut(auth);draw();return}
+ if(me.role==='morador'&&me.status!=='aprovado'){busy=false;mode='pending';await draw();return}
+ if(door==='adm'&&me.role!=='adm'){msg='Esta conta não é da administração. Volte e escolha Moradores.';busy=false;mode='adm';await signOut(auth);draw();return}
+ if(door==='mor'&&me.role==='adm'){msg='Esta conta é da administração. Volte e escolha Administração.';busy=false;mode='morin';await signOut(auth);draw();return}
  if(me.role==='adm'&&mustChange(u)){mode='force';msg='';busy=false;draw();return}
  started=true;gate.hidden=true;window.ME=me;
  if(window.__onMe)window.__onMe(me);
  window.__fbres(api);
 }
 async function doIn(){
- const raw=vals.ge||'',em=toEmail(raw),pe=document.getElementById('gp'),pw=pe?pe.value:'';
- if(!raw||!pw){msg='Digite o usuário (ou e-mail) e a senha.';draw();return}
+ const raw=vals.ge||'',pe=document.getElementById('gp'),pw=pe?pe.value:'';
+ door=mode==='adm'?'adm':'mor';
+ if(!raw||!pw){msg=door==='adm'?'Digite o usuário e a senha.':'Digite o e-mail e a senha.';draw();return}
+ if(door==='mor'&&!raw.includes('@')){msg='Moradores entram com o e-mail do cadastro.';draw();return}
+ const em=toEmail(raw);
  pendingDefault=(pw==='123456');busy=true;msg='';draw();
  try{await signInWithEmailAndPassword(auth,em,pw)}catch(e){pendingDefault=false;msg=authMsg(e);busy=false;draw()}
 }
 async function doReg(){
  const nome=vals.gn||'',bloco=vals.gb||'',apt=vals.ga||'',apto='Bloco '+bloco+', Apto '+apt,cod=vals.gc||'',em=vals.ge||'',pe=document.getElementById('gp'),pw=pe?pe.value:'';
  if(!nome||!bloco||!apt||!cod||!em||pw.length<6){msg='Preencha todos os campos. A senha precisa de pelo menos 6 caracteres.';draw();return}
- signing=true;msg='';
+ if(!foto){msg='Tire uma selfie para continuar.';draw();return}
+ if(!consent){msg='Marque a autorização para enviar a foto.';draw();return}
+ door='mor';signing=true;msg='';
  try{
   const cr=await createUserWithEmailAndPassword(auth,em,pw);
-  try{await setDoc(doc(fdb,'usuarios',cr.user.uid),{nome,apto,role:'morador',codigo:cod})}
+  try{await setDoc(doc(fdb,'usuarios',cr.user.uid),{nome,apto,role:'morador',codigo:cod,status:'pendente',foto})}
   catch(e){try{await deleteUser(cr.user)}catch(x){}signing=false;msg='Código do condomínio incorreto.';draw();return}
-  signing=false;await proceed(cr.user);
+  signing=false;foto='';consent=false;await proceed(cr.user);
  }catch(e){signing=false;msg=authMsg(e);draw()}
 }
 async function doForgot(){
  const em=vals.ge||'';
- if(!em){msg='Digite o seu e-mail acima e toque de novo.';draw();return}
- if(!em.includes('@')){msg='Para Rodrigo e Alessandra, a senha só pode ser redefinida por quem cuida do Firebase do condomínio.';draw();return}
+ if(!em||!em.includes('@')){msg='Digite o seu e-mail acima e toque de novo.';draw();return}
  try{await sendPasswordResetEmail(auth,em)}catch(e){}
  msg='Se esse e-mail tiver conta, enviamos o link para criar uma nova senha.';draw();
 }
 gate.addEventListener('click',async e=>{
  const b=e.target.closest('[data-g]');if(!b)return;snap();const a=b.dataset.g;
- if(a==='goreg'){mode='reg';msg='';draw()}
- else if(a==='goin'){mode='in';msg='';draw()}
+ if(a==='goreg'){mode='morreg';msg='';draw()}
+ else if(a==='goin'||a==='gomor'){mode='morin';msg='';draw()}
+ else if(a==='goadm'){mode='adm';msg='';draw()}
+ else if(a==='home'){mode='home';msg='';draw()}
  else if(a==='in')await doIn();
  else if(a==='reg')await doReg();
  else if(a==='forgot')await doForgot();
  else if(a==='force')await doForce();
+ else if(a==='recheck'){msg='Ainda aguardando aprovação da administração.';await proceed(auth.currentUser)}
  else if(a==='out')await signOut(auth).then(()=>location.reload());
 });
+gate.addEventListener('change',async e=>{
+ if(e.target.id==='gf'&&e.target.files&&e.target.files[0]){snap();try{foto=await shrink(e.target.files[0]);msg=''}catch(x){msg='Não foi possível ler a foto. Tente de novo.'}draw()}
+ else if(e.target.id==='gk'){consent=e.target.checked}
+});
 gate.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='fp2'){e.preventDefault();doForce();return}
- if(e.key==='Enter'&&e.target.id==='gp'){e.preventDefault();snap();(mode==='in'?doIn:doReg)()}});
+ if(e.key==='Enter'&&e.target.id==='gp'){e.preventDefault();snap();(mode==='adm'||mode==='morin'?doIn:doReg)()}});
 onAuthStateChanged(auth,async u=>{
  if(signing)return;
- if(!u){if(mode==='load')mode='in';draw();return}
+ if(!u){if(mode==='load')mode='home';draw();return}
  await proceed(u);
 });
 
