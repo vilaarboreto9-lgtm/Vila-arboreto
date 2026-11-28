@@ -125,7 +125,8 @@ var ACARDS=[
  ['fra','💡','Frases Motivacionais Diárias','Mensagens que inspiram um condomínio mais unido e feliz.'],
  ['tv','📺','TV Arboreto','Comunicados, notícias e entretenimento.'],
  ['pf','📘','Manual do Morador','Escreva as perguntas e respostas que os moradores vão encontrar.'],
- ['res','👥','Moradores','Moradores cadastrados, com bloco e apartamento.']];
+ ['res','👥','Moradores','Moradores cadastrados, com bloco e apartamento.'],
+ ['pacc','🛂','Portaria e Acessos','Pedidos de acesso, validação de código e chat com moradores.']];
 var MNAV=[['mhome','Início','🏠'],['com','Comunicados','📢'],['acc','Controle de Acesso','🚪'],['faq','Manual','📘'],['ouv','Ouvidoria','💬']];
 var ANAV=[['ass','Assistente','🎙️'],['age','Agenda','📅'],['tar','Tarefas','✅'],['adm','Administração','⚙️'],['aud','Auditoria','🔒']];
 var TREE='<svg width="46" height="40" viewBox="0 0 46 40" aria-hidden="true"><g fill="#d9b73e"><ellipse cx="23" cy="9" rx="4" ry="7"/><ellipse cx="14" cy="14" rx="4" ry="6.5" transform="rotate(-40 14 14)"/><ellipse cx="32" cy="14" rx="4" ry="6.5" transform="rotate(40 32 14)"/><ellipse cx="9" cy="23" rx="3.5" ry="6" transform="rotate(-65 9 23)"/><ellipse cx="37" cy="23" rx="3.5" ry="6" transform="rotate(65 37 23)"/><rect x="21.6" y="18" width="2.8" height="20" rx="1.4"/></g></svg>';
@@ -139,7 +140,7 @@ function cards(list){
  }).join('')+'</div>';
 }
 function hero(ic,t,s){return '<div class="hero"><div class="ring">'+ic+'</div><h1>'+t+'</h1><p>'+s+'</p></div>'}
-function back(){return '<button class="back" data-go="'+(st.role==='adm'?'adm':st.role==='por'?'pchat':'mhome')+'">‹ Voltar</button>'}
+function back(){return '<button class="back" data-go="'+(st.sc==='pthread'?'pchat':st.role==='adm'?'adm':st.role==='por'?'pchat':'mhome')+'">‹ Voltar</button>'}
 function box(h,p,s){return '<div class="box"><h4>'+h+'</h4><p>'+p+'</p>'+(s?'<small>'+s+'</small>':'')+'</div>'}
 function body(){
  var s=st.sc,h='';
@@ -317,7 +318,7 @@ var SYS='Você é o Marcelo, assistente virtual do condomínio Vila Arboreto, co
 function ctx(){
  var r=0,d=0;F.items.forEach(function(i){if(i.t==='r')r+=i.v;else d+=i.v});
  var n=new Date(),k=Math.round((Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())-Date.UTC(2026,10,17))/864e5),fi=((k%FR.length)+FR.length)%FR.length;
- return JSON.stringify({agora:n.toLocaleString('pt-BR',{dateStyle:'full',timeStyle:'short'}),financas:{receitas:r,despesas:d,saldo:r-d,lancamentos:F.items.map(function(i){return{tipo:i.t==='r'?'receita':'despesa',descricao:i.d,valor:i.v,data:i.dt}})},prestadores:P.items.map(function(i){return{nome:i.n,servico:i.s,telefone:i.p}}),alerta_ativo:(A.cur&&A.cur.ativo)?{tipo:A.cur.tipo,detalhe:A.cur.det}:null,ultimos_alertas:A.hist.slice(0,5).map(function(a){return{tipo:a.tipo,detalhe:a.det,quando:hora(a.ts)}}),videos_tv:T.items.map(function(v){return{titulo:v.t,descricao:v.d,quando:hora(v.ts)}}),tarefas:K.items.map(function(t){return{tarefa:t.t,prioridade:t.p==='a'?'alta':t.p==='m'?'média':'baixa',concluida:t.ok}}),usuario_atual:st.user?{nome:st.user.nome,apelido:st.user.ap,cargo:st.user.cargo}:null,o_que_aprendi_sobre_voce:MEM.slice(0,25).map(function(m){return m.t}),ultimas_mudancas:AU.items.slice(0,15).map(function(e){return{secao:e.sec,acao:e.acao,detalhe:e.det,quando:hora(e.ts),por:e.via==='Marcelo'?'Marcelo':nm(e.uid)}}),visitantes:D.vis,resumo_do_dia:(function(){var n=new Date(),p=function(x){return String(x).padStart(2,'0')},ds=function(d){return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())},hj=ds(n),am=ds(new Date(n.getTime()+864e5)),h=n.getHours();return{periodo_do_dia:h<12?'manhã':h<18?'tarde':'noite',compromissos_hoje:G.items.filter(function(e){return e.d===hj}).map(function(e){return e.h+' '+e.t}),compromissos_amanha:G.items.filter(function(e){return e.d===am}).map(function(e){return e.h+' '+e.t}),tarefas_pendentes_prioridade_alta:K.items.filter(function(t){return !t.ok&&t.p==='a'}).map(function(t){return t.t}),outras_tarefas_pendentes:K.items.filter(function(t){return !t.ok&&t.p!=='a'}).length,alerta_ativo:!!(A.cur&&A.cur.ativo),mensagens_na_ouvidoria:D.ouv.length,perguntas_de_moradores_sem_resposta:pendQ().length}})(),agenda:G.items.map(function(e){return{compromisso:e.t,dia:e.d,hora:e.h,local:e.l}}),mensagens_ouvidoria:D.ouv,frase_do_dia:FR[fi].split('|')[0]});
+ return JSON.stringify({agora:n.toLocaleString('pt-BR',{dateStyle:'full',timeStyle:'short'}),financas:{receitas:r,despesas:d,saldo:r-d,lancamentos:F.items.map(function(i){return{tipo:i.t==='r'?'receita':'despesa',descricao:i.d,valor:i.v,data:i.dt}})},prestadores:P.items.map(function(i){return{nome:i.n,servico:i.s,telefone:i.p}}),alerta_ativo:(A.cur&&A.cur.ativo)?{tipo:A.cur.tipo,detalhe:A.cur.det}:null,ultimos_alertas:A.hist.slice(0,5).map(function(a){return{tipo:a.tipo,detalhe:a.det,quando:hora(a.ts)}}),videos_tv:T.items.map(function(v){return{titulo:v.t,descricao:v.d,quando:hora(v.ts)}}),tarefas:K.items.map(function(t){return{tarefa:t.t,prioridade:t.p==='a'?'alta':t.p==='m'?'média':'baixa',concluida:t.ok}}),portaria:{pedidos_aguardando:AC.all.filter(function(x){return x.status==='aguardando'}).length,codigos_para_enviar:AC.all.filter(function(x){return x.status==='confirmado'}).length,aguardando_visitante:AC.all.filter(function(x){return x.status==='enviado'}).length,conversas_nao_lidas:AC.chats.filter(function(c){return c.unreadP}).length,ultimos_acessos:AC.all.slice(0,10).map(function(x){return{tipo:x.tipo,visitante:x.visitante,apto:x.apto,status:x.status}})},moradores:{aguardando_aprovacao:(window.rPend?rPend().length:0),total_cadastrados:(window.RS?RS.items.length:0)},gastos_esporadicos:{compras:X.items.length,total:X.items.reduce(function(q,i){return q+i.v},0),repor_em_breve:(window.xRepor?xRepor():[])},manual_do_morador:MN.items.map(function(c){return c.t}),usuario_atual:st.user?{nome:st.user.nome,apelido:st.user.ap,cargo:st.user.cargo}:null,o_que_aprendi_sobre_voce:MEM.slice(0,25).map(function(m){return m.t}),ultimas_mudancas:AU.items.slice(0,15).map(function(e){return{secao:e.sec,acao:e.acao,detalhe:e.det,quando:hora(e.ts),por:e.via==='Marcelo'?'Marcelo':nm(e.uid)}}),visitantes:D.vis,resumo_do_dia:(function(){var n=new Date(),p=function(x){return String(x).padStart(2,'0')},ds=function(d){return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())},hj=ds(n),am=ds(new Date(n.getTime()+864e5)),h=n.getHours();return{periodo_do_dia:h<12?'manhã':h<18?'tarde':'noite',compromissos_hoje:G.items.filter(function(e){return e.d===hj}).map(function(e){return e.h+' '+e.t}),compromissos_amanha:G.items.filter(function(e){return e.d===am}).map(function(e){return e.h+' '+e.t}),tarefas_pendentes_prioridade_alta:K.items.filter(function(t){return !t.ok&&t.p==='a'}).map(function(t){return t.t}),outras_tarefas_pendentes:K.items.filter(function(t){return !t.ok&&t.p!=='a'}).length,alerta_ativo:!!(A.cur&&A.cur.ativo),mensagens_na_ouvidoria:D.ouv.length,perguntas_de_moradores_sem_resposta:pendQ().length}})(),agenda:G.items.map(function(e){return{compromisso:e.t,dia:e.d,hora:e.h,local:e.l}}),mensagens_ouvidoria:D.ouv,frase_do_dia:FR[fi].split('|')[0]});
 }
 function bub(m){return '<div class="mb '+m.r+'">'+(m.r==='a'?'<small>Marcelo</small>':'')+'<div>'+esc(m.t).replace(/\n/g,'<br>')+'</div></div>'}
 function paint(){
@@ -774,7 +775,7 @@ function render(){
  }
  var nav=navFor();
  var act=st.sc;
- if(st.role==='adm'&&['fin','con','fra','ale','tv','pf','chpw','res'].indexOf(act)>-1)act='adm';
+ if(st.role==='adm'&&['fin','con','fra','ale','tv','pf','chpw','res','pacc','pval','pchat','pthread'].indexOf(act)>-1)act='adm';
  
  var showBack=['mhome','adm','ass','age','tar','aud','pacc','pval','pchat'].indexOf(st.sc)<0;
  if(st.role==='por'&&st.sc==='pthread')act='pchat';
@@ -919,6 +920,9 @@ function basicMarcelo(tx){
   if(ea.length)bits.push('amanhã: '+list(ea));
   var pa=(window.RS?RS.items.filter(function(x){return x.status!=='aprovado'}).length:0);
   if(pa)bits.push(pa+(pa>1?' cadastros de moradores aguardando aprovação':' cadastro de morador aguardando aprovação'));
+  var qa0=AC.all.filter(function(x){return x.status==='aguardando'}).length,qc0=AC.chats.filter(function(c){return c.unreadP}).length;
+  if(qa0)bits.push(qa0+(qa0>1?' pedidos de acesso aguardando a portaria':' pedido de acesso aguardando a portaria'));
+  if(qc0)bits.push(qc0+(qc0>1?' conversas novas no chat da portaria':' conversa nova no chat da portaria'));
   var rp0=(window.xRepor?xRepor():[]);
   if(rp0.length)bits.push('pode ser hora de repor: '+rp0.slice(0,3).join(', '));
   return per+', '+ap+'! Que bom ter você aqui. '+(bits.length?'As prioridades de hoje: '+bits.join('. ')+'. ':'Hoje o dia está tranquilo, sem nada urgente. ')+'Em que posso ajudar?';
@@ -928,6 +932,11 @@ function basicMarcelo(tx){
   if(!X.items.length)return 'Ainda não há compras registradas em Gastos esporádicos.';
   return 'Neste mês foram '+mm.length+(mm.length===1?' compra':' compras')+', somando '+brl(tm)+'.'+(rp.length?' Pode ser hora de repor: '+rp.slice(0,4).join(', ')+'.':' Nada precisando de reposição agora.');
  }
+ if(/acesso|visitante|portaria|portari|codigo|código|veiculo|veículo/.test(t)){
+  var ag=AC.all.filter(function(x){return x.status==='aguardando'}).length,cf=AC.all.filter(function(x){return x.status==='confirmado'}).length,en=AC.all.filter(function(x){return x.status==='enviado'}).length,uc=AC.chats.filter(function(c){return c.unreadP}).length;
+  return 'Na portaria há '+ag+' pedido(s) aguardando confirmação, '+cf+' com código para enviar, '+en+' esperando o visitante e '+uc+' conversa(s) não lida(s).';
+ }
+ if(/morador|cadastro|aprova/.test(t)){var pn=window.rPend?rPend().length:0,tt=window.RS?RS.items.length:0;return pn?'Há '+pn+(pn>1?' cadastros':' cadastro')+' de moradores aguardando a sua aprovação. No total, '+(tt-pn)+' moradores já foram aprovados.':'Nenhum cadastro aguardando. Há '+tt+' moradores aprovados.';}
  if(/tarefa/.test(t))return pend.length?'Você tem '+pend.length+(pend.length>1?' tarefas pendentes':' tarefa pendente')+'. As principais: '+list(pend.sort(function(a,b){return ({a:0,m:1,b:2}[a.p])-({a:0,m:1,b:2}[b.p])}).map(function(x){return x.t}))+'.':'Nenhuma tarefa pendente. Parabéns, '+ap+'!';
  if(/agenda|compromiss|reuni/.test(t)){
   var up=G.items.filter(function(e){return e.d>=hj}).sort(function(a,b){return (a.d+a.h)<(b.d+b.h)?-1:1}).slice(0,4).map(function(e){return e.t+' em '+e.d.split('-').reverse().slice(0,2).join('/')+' às '+e.h});
@@ -1088,6 +1097,8 @@ async function rNo(id){
 function extra(){
  if(st.sc!=='adm'||!st.user)return '';
  var np=window.RS?rPend().length:0,h='';
+ var qp=AC.all.filter(function(x){return x.status==='aguardando'||x.status==='confirmado'}).length,qc=AC.chats.filter(function(c){return c.unreadP}).length;
+ if(qp||qc)h+='<button class="card" data-go="pacc" style="width:100%;min-height:0;flex-direction:row;align-items:center;gap:12px;margin-top:10px;border-color:#b3151b"><span class="e">🛂</span><div><h3>'+(qp?qp+(qp>1?' pedidos de acesso':' pedido de acesso'):'')+(qp&&qc?' • ':'')+(qc?qc+(qc>1?' conversas novas':' conversa nova'):'')+'</h3><p>Toque para abrir a portaria.</p></div></button>';
  if(np)h+='<button class="card" data-go="res" style="width:100%;min-height:0;flex-direction:row;align-items:center;gap:12px;margin-top:10px;border-color:#b3151b"><span class="e">⏳</span><div><h3>'+np+(np>1?' cadastros aguardando aprovação':' cadastro aguardando aprovação')+'</h3><p>Toque para conferir e aprovar.</p></div></button>';
  return h+(st.user.id==='alessandra'?retroCard():'')+'<button class="back" data-go="chpw" style="width:100%;margin-top:8px">🔑 Alterar minha senha</button>';
 }
@@ -1200,7 +1211,7 @@ var TIPOS={visita:'Visita a pé',veiculo:'Visitante com veículo',prestador:'Pre
 var AST={aguardando:['⏳ Aguardando a portaria','#c98a00'],confirmado:['⏳ Confirmado: a portaria vai enviar o código','#c98a00'],enviado:['✅ Código liberado','#14573a'],usado:['Entrada liberada','#5d6b62'],recusado:['Recusado pela portaria','#b3151b']};
 var PNAV=[['pacc','Pedidos','🛂'],['pval','Validar','🔑'],['pchat','Chat','💬']];
 function navFor(){
- if(st.role==='adm')return ANAV;
+ if(st.role==='adm'){var qa=AC.all.filter(function(x){return x.status==='aguardando'||x.status==='confirmado'}).length+AC.chats.filter(function(c){return c.unreadP}).length;return ANAV.map(function(n){return n[0]==='adm'&&qa?[n[0],n[1]+' ●',n[2]]:n})}
  if(st.role==='por'){
   var np=AC.all.filter(function(x){return x.status==='aguardando'||x.status==='confirmado'}).length,nc=AC.chats.filter(function(c){return c.unreadP}).length;
   return [['pacc','Pedidos'+(np?' ('+np+')':''),'🛂'],['pval','Validar','🔑'],['pchat','Chat'+(nc?' ●':''),'💬']];
@@ -1260,8 +1271,9 @@ async function cSendM(){
  }catch(e){AC.msg='Não foi possível enviar a mensagem.';render();}
 }
 /* ---------- portaria ---------- */
+function pbar(){if(st.role!=='adm')return '';return '<div class="chips" style="margin-bottom:10px">'+[['pacc','Pedidos'],['pval','Validar código'],['pchat','Chat']].map(function(t){return '<button class="chip'+((st.sc===t[0]||(st.sc==='pthread'&&t[0]==='pchat'))?' on':'')+'" data-go="'+t[0]+'">'+t[1]+'</button>'}).join('')+'</div>'}
 function paccView(){
- var L=AC.all.slice().sort(function(a,b){return b.ts-a.ts}),g=function(k){return L.filter(function(x){return x.status===k})},h='<h2>Pedidos de acesso</h2>';
+ var L=AC.all.slice().sort(function(a,b){return b.ts-a.ts}),g=function(k){return L.filter(function(x){return x.status===k})},h=pbar()+'<h2>Pedidos de acesso</h2>';
  var ag=g('aguardando'),cf=g('confirmado'),en=g('enviado'),hi=L.filter(function(x){return x.status==='usado'||x.status==='recusado'}).slice(0,15);
  h+='<div class="cat">Aguardando confirmação ('+ag.length+')</div>';
  if(!ag.length)h+='<p class="note">Nenhum pedido novo.</p>';
@@ -1289,7 +1301,7 @@ async function pSend(id){
  }catch(e){}
 }
 function pvalView(){
- var h='<h2>Validar código</h2><div class="box"><label for="pcode">Código que o visitante falou</label><input id="pcode" inputmode="numeric" maxlength="7" autocomplete="off" placeholder="000 000"><button class="gold" data-act="p-check">Conferir</button></div>';
+ var h=pbar()+'<h2>Validar código</h2><div class="box"><label for="pcode">Código que o visitante falou</label><input id="pcode" inputmode="numeric" maxlength="7" autocomplete="off" placeholder="000 000"><button class="gold" data-act="p-check">Conferir</button></div>';
  if(PV.ok){h+='<p class="note" style="color:#14573a;font-weight:700">'+esc(PV.ok)+'</p>';PV.ok='';}
  if(PV.msg)h+='<p class="note" style="color:#b3151b;font-weight:700">'+esc(PV.msg)+'</p>';
  if(PV.res){var x=AC.all.filter(function(i){return i.id===PV.res})[0];if(x)h+=aCard(x,x.status==='enviado'?'<button class="gold" data-pliber="'+esc(x.id)+'">Liberar entrada</button>':'<p style="color:#5d6b62;font-weight:700">'+(AST[x.status]||['',''])[0]+'</p>')}
@@ -1306,7 +1318,7 @@ function pCheck(){
 }
 async function pLiber(id){var x=AC.all.filter(function(i){return i.id===id})[0];if(!x||!AU.db)return;try{await aWrite(x,{status:'usado',usedTs:Date.now()});audit('Portaria','Liberou entrada',(x.visitante||'')+' — '+(x.apto||''));PV.res=null;PV.msg='';PV.ok='Entrada liberada.';}catch(e){PV.msg='Não foi possível liberar.';}render();}
 function pchatView(){
- var l=AC.chats.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0)}),h='<h2>Chat com moradores</h2>';
+ var l=AC.chats.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0)}),h=pbar()+'<h2>Chat com moradores</h2>';
  if(!l.length)return h+'<p class="note">Nenhuma conversa ainda.</p>';
  l.forEach(function(c){h+='<button class="box vrow" data-pthr="'+esc(c.id)+'"><h4>'+esc(c.nome||'Morador')+(c.unreadP?' <span class="pri" style="background:#b3151b">NOVA</span>':'')+'</h4><small>'+esc(c.apto||'')+' • '+hora(c.ts||0)+'</small><p>'+esc(c.lastText||'')+'</p></button>'});
  return h;
@@ -1320,13 +1332,13 @@ function pOpen(uid){
 }
 function pthreadView(){
  var m=AC.chats.filter(function(c){return c.id===AC.thread})[0]||{};
- return '<h2>'+esc(m.nome||'Morador')+'</h2><p class="note" style="margin:0 0 8px;text-align:left">'+esc(m.apto||'')+'</p><div id="cm">'+chatBox(AC.msgs,'portaria')+'</div><div class="abar"><input id="pci" placeholder="Escreva ao morador…" autocomplete="off"><button data-act="p-csend" aria-label="Enviar">➤</button></div>';
+ return pbar()+'<h2>'+esc(m.nome||'Morador')+'</h2><p class="note" style="margin:0 0 8px;text-align:left">'+esc(m.apto||'')+'</p><div id="cm">'+chatBox(AC.msgs,'portaria')+'</div><div class="abar"><input id="pci" placeholder="Escreva ao morador…" autocomplete="off"><button data-act="p-csend" aria-label="Enviar">➤</button></div>';
 }
 async function cSendP(){
  var i=document.getElementById('pci'),t=i?i.value.trim():'';if(!t||!AU.db||!AC.thread)return;i.value='';
  var m=AC.chats.filter(function(c){return c.id===AC.thread})[0]||{},now=Date.now();
  try{
-  await AU.db.doc('chats/'+AC.thread+'/msgs/m'+now+Math.floor(Math.random()*1000)).set({de:'portaria',nome:'Portaria',t:t,ts:now});
+  await AU.db.doc('chats/'+AC.thread+'/msgs/m'+now+Math.floor(Math.random()*1000)).set({de:'portaria',nome:st.role==='adm'?'Administração':'Portaria',t:t,ts:now});
   await AU.db.doc('chats/'+AC.thread).set({nome:m.nome||'',apto:m.apto||'',lastText:t,lastFrom:'portaria',ts:now,unreadP:false,unreadM:true});
  }catch(e){}
 }
