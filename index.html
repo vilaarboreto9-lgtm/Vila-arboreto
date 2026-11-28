@@ -130,8 +130,8 @@ var MNAV=[['mhome','Início','🏠'],['com','Comunicados','📢'],['acc','Contro
 var ANAV=[['ass','Assistente','🎙️'],['age','Agenda','📅'],['tar','Tarefas','✅'],['adm','Administração','⚙️'],['aud','Auditoria','🔒']];
 var TREE='<svg width="46" height="40" viewBox="0 0 46 40" aria-hidden="true"><g fill="#d9b73e"><ellipse cx="23" cy="9" rx="4" ry="7"/><ellipse cx="14" cy="14" rx="4" ry="6.5" transform="rotate(-40 14 14)"/><ellipse cx="32" cy="14" rx="4" ry="6.5" transform="rotate(40 32 14)"/><ellipse cx="9" cy="23" rx="3.5" ry="6" transform="rotate(-65 9 23)"/><ellipse cx="37" cy="23" rx="3.5" ry="6" transform="rotate(65 37 23)"/><rect x="21.6" y="18" width="2.8" height="20" rx="1.4"/></g></svg>';
 function head(){
- var who=st.role==='adm'?(st.user?st.user.nome:'Administrador'):(window.ME&&window.ME.nome?String(window.ME.nome).split(' ')[0]:'Morador');
- return '<header class="hdr"><button class="ic" data-go="'+(st.role==='adm'?'splash':'mhome')+'" aria-label="Início">☰</button><div class="brand">'+TREE+'<span class="v">VILA</span><div class="a">ARBORETO</div><small>CONDOMÍNIO</small></div><button class="who" data-go="splash"><b>👤</b>Olá,<br>'+who+' ▾</button></header>';
+ var who=st.role==='por'?'Portaria':st.role==='adm'?(st.user?st.user.nome:'Administrador'):(window.ME&&window.ME.nome?String(window.ME.nome).split(' ')[0]:'Morador');
+ return '<header class="hdr"><button class="ic" data-go="'+(st.role==='adm'?'splash':st.role==='por'?'pacc':'mhome')+'" aria-label="Início">☰</button><div class="brand">'+TREE+'<span class="v">VILA</span><div class="a">ARBORETO</div><small>CONDOMÍNIO</small></div><button class="who" data-go="splash"><b>👤</b>Olá,<br>'+who+' ▾</button></header>';
 }
 function cards(list){
  return '<div class="grid">'+list.map(function(c){
@@ -139,11 +139,16 @@ function cards(list){
  }).join('')+'</div>';
 }
 function hero(ic,t,s){return '<div class="hero"><div class="ring">'+ic+'</div><h1>'+t+'</h1><p>'+s+'</p></div>'}
-function back(){return '<button class="back" data-go="'+(st.role==='adm'?'adm':'mhome')+'">‹ Voltar</button>'}
+function back(){return '<button class="back" data-go="'+(st.role==='adm'?'adm':st.role==='por'?'pchat':'mhome')+'">‹ Voltar</button>'}
 function box(h,p,s){return '<div class="box"><h4>'+h+'</h4><p>'+p+'</p>'+(s?'<small>'+s+'</small>':'')+'</div>'}
 function body(){
  var s=st.sc,h='';
  if(s==='faq')return faqView();
+ if(s==='acc')return accView();
+ if(s==='pacc')return paccView();
+ if(s==='pval')return pvalView();
+ if(s==='pchat')return pchatView();
+ if(s==='pthread')return pthreadView();
  if(s==='pf')return pfView();
  if(s==='res')return resView();
  if(s==='mhome')return hero('🏠','Moradores','Facilidades e serviços para o seu dia a dia')+cards(MCARDS);
@@ -764,20 +769,21 @@ function tvView(){
 function render(){
  if(st.sc==='login'||st.sc==='newpw'){app.innerHTML=loginView();return;}
  if(st.sc==='splash'){
-  app.innerHTML='<div class="sp"><div class="top">'+TREE.replace('width="46" height="40"','width="78" height="68"')+'<div class="v">VILA</div><div class="a">ARBORETO</div><small>CONDOMÍNIO</small></div><div class="mid">'+(window.ME&&window.ME.role==='morador'?'':'<button class="gold" data-role="adm"><span>⚙️</span>Administração</button>')+'<button class="gold" data-role="mor"><span>👥</span>Moradores</button><button class="back" data-act="signout" style="width:100%">Sair da conta</button></div><div class="bot"></div></div>';
+  app.innerHTML='<div class="sp"><div class="top">'+TREE.replace('width="46" height="40"','width="78" height="68"')+'<div class="v">VILA</div><div class="a">ARBORETO</div><small>CONDOMÍNIO</small></div><div class="mid">'+(window.ME&&window.ME.role==='portaria'?'':(window.ME&&window.ME.role==='morador'?'':'<button class="gold" data-role="adm"><span>⚙️</span>Administração</button>')+'<button class="gold" data-role="mor"><span>👥</span>Moradores</button>')+'<button class="back" data-act="signout" style="width:100%">Sair da conta</button></div><div class="bot"></div></div>';
   return;
  }
- var nav=st.role==='adm'?ANAV:MNAV;
+ var nav=navFor();
  var act=st.sc;
  if(st.role==='adm'&&['fin','con','fra','ale','tv','pf','chpw','res'].indexOf(act)>-1)act='adm';
  
- var showBack=['mhome','adm','ass','age','tar','aud'].indexOf(st.sc)<0;
+ var showBack=['mhome','adm','ass','age','tar','aud','pacc','pval','pchat'].indexOf(st.sc)<0;
+ if(st.role==='por'&&st.sc==='pthread')act='pchat';
  app.innerHTML=head()+banner()+'<main>'+(showBack?back():'')+body()+extra()+'</main><nav class="nav">'+nav.map(function(n){return '<button data-go="'+n[0]+'"'+(n[0]===act?' class="on"':'')+'><span>'+n[2]+'</span>'+n[1]+'</button>'}).join('')+'</nav>';
 }
 app.addEventListener('click',function(e){
- var el=e.target.closest('[data-go],[data-role],[data-act],[data-task],[data-vid],[data-fdel],[data-pdel],[data-ech],[data-tvi],[data-tvdel],[data-gdel],[data-ktask],[data-kdel],[data-qans],[data-qdis],[data-qdel],[data-mdel],[data-medit],[data-mtp],[data-rdel],[data-rok],[data-rno],[data-xdel]');
+ var el=e.target.closest('[data-go],[data-role],[data-act],[data-task],[data-vid],[data-fdel],[data-pdel],[data-ech],[data-tvi],[data-tvdel],[data-gdel],[data-ktask],[data-kdel],[data-qans],[data-qdis],[data-qdel],[data-mdel],[data-medit],[data-mtp],[data-rdel],[data-rok],[data-rno],[data-xdel],[data-atab],[data-pconf],[data-pref],[data-psend],[data-pliber],[data-pthr]');
  if(!el)return;
- if(el.dataset.role){if(el.dataset.role==='adm'&&window.ME&&window.ME.role==='morador'){return;}if(el.dataset.role==='adm'&&!st.user){LG.msg='';st.sc='login';}else{st.role=el.dataset.role;st.sc=st.role==='adm'?'adm':'mhome';}}
+ if(el.dataset.role){if(window.ME&&window.ME.role==='portaria'){return;}if(el.dataset.role==='adm'&&window.ME&&window.ME.role==='morador'){return;}if(el.dataset.role==='adm'&&!st.user){LG.msg='';st.sc='login';}else{st.role=el.dataset.role;st.sc=st.role==='adm'?'adm':'mhome';}}
  else if(el.dataset.go){st.sc=el.dataset.go;if(st.sc==='splash'){st.role=null;M=[];}}
  else if(el.dataset.vid!==undefined){st.cur=+el.dataset.vid;}
  else if(el.dataset.task!==undefined){var t=D.tasks[+el.dataset.task];t.ok=!t.ok;}
@@ -796,6 +802,17 @@ app.addEventListener('click',function(e){
  else if(el.dataset.act==='xadd'){xAdd();}
  else if(el.dataset.xdel){X.items=X.items.filter(function(i){return i.id!==el.dataset.xdel});X.dirty=true;X.msg='Toque em Salvar e enviar para registrar.';}
  else if(el.dataset.act==='xsave'){xSave();return;}
+ else if(el.dataset.atab){AC.tab=el.dataset.atab;AC.msg='';if(AC.tab==='chat')markM();}
+ else if(el.dataset.act==='ac-form'){AC.form=!AC.form;AC.msg='';}
+ else if(el.dataset.act==='ac-send'){aSend();return;}
+ else if(el.dataset.act==='ac-csend'){cSendM();return;}
+ else if(el.dataset.act==='p-check'){pCheck();}
+ else if(el.dataset.act==='p-csend'){cSendP();return;}
+ else if(el.dataset.pconf){pConf(el.dataset.pconf);return;}
+ else if(el.dataset.pref){pRef(el.dataset.pref);return;}
+ else if(el.dataset.psend){pSend(el.dataset.psend);return;}
+ else if(el.dataset.pliber){pLiber(el.dataset.pliber);return;}
+ else if(el.dataset.pthr){pOpen(el.dataset.pthr);}
  else if(el.dataset.rok){rOk(el.dataset.rok);return;}
  else if(el.dataset.rno){rNo(el.dataset.rno);return;}
  else if(el.dataset.rdel){rDel(el.dataset.rdel);return;}
@@ -1174,11 +1191,183 @@ function pfView(){
 }
 
 </script>
+<script>
+
+USERS.portaria={nome:'Portaria',ap:'portaria',cargo:'Portaria',tmp:''};
+var AC={tab:'acc',form:false,tipo:'veiculo',msg:'',mine:[],all:[],chats:[],msgs:[],thread:null,threadMeta:null,myMeta:null,unsubT:null,unsubM:null};
+var PV={res:null,msg:''};
+var TIPOS={visita:'Visita a pé',veiculo:'Visitante com veículo',prestador:'Prestador de serviço'};
+var AST={aguardando:['⏳ Aguardando a portaria','#c98a00'],confirmado:['⏳ Confirmado: a portaria vai enviar o código','#c98a00'],enviado:['✅ Código liberado','#14573a'],usado:['Entrada liberada','#5d6b62'],recusado:['Recusado pela portaria','#b3151b']};
+var PNAV=[['pacc','Pedidos','🛂'],['pval','Validar','🔑'],['pchat','Chat','💬']];
+function navFor(){
+ if(st.role==='adm')return ANAV;
+ if(st.role==='por'){
+  var np=AC.all.filter(function(x){return x.status==='aguardando'||x.status==='confirmado'}).length,nc=AC.chats.filter(function(c){return c.unreadP}).length;
+  return [['pacc','Pedidos'+(np?' ('+np+')':''),'🛂'],['pval','Validar','🔑'],['pchat','Chat'+(nc?' ●':''),'💬']];
+ }
+ return MNAV.map(function(n){return n[0]==='acc'&&AC.myMeta&&AC.myMeta.unreadM?[n[0],n[1]+' ●',n[2]]:n});
+}
+function fmtCode(c){return String(c||'').replace(/(\d{3})(\d{3})/,'$1 $2')}
+function aWrite(x,patch){var d=Object.assign({},x,patch);delete d.id;return AU.db.doc('acessos/'+x.id).set(d)}
+function genCode(){var used={};AC.all.forEach(function(x){if(x.codigo)used[x.codigo]=1});var c;do{c=String(Math.floor(100000+Math.random()*900000))}while(used[c]);return c}
+function aCard(x,extraH){
+ var car=x.tipo==='veiculo'?'<p>'+esc(x.modelo)+' • '+esc(x.cor)+' • placa <b>'+esc(x.placa)+'</b></p>':'';
+ return '<div class="box"><h4>'+esc(TIPOS[x.tipo]||x.tipo)+': '+esc(x.visitante)+'</h4>'+car+'<small>'+esc(x.nome||'')+' • '+esc(x.apto||'')+' • '+hora(x.ts)+(x.obs?' • '+esc(x.obs):'')+'</small>'+(extraH||'')+'</div>';
+}
+function chatBox(msgs,me){
+ if(!msgs.length)return '<p class="note">Nenhuma mensagem ainda.</p>';
+ return msgs.map(function(m){return '<div class="mb '+(m.de===me?'u':'a')+'"><small style="color:inherit;opacity:.75">'+esc(m.nome||'')+' • '+hora(m.ts)+'</small><div>'+esc(m.t).replace(/\n/g,'<br>')+'</div></div>'}).join('');
+}
+/* ---------- morador ---------- */
+function accView(){
+ var h='<h2>Controle de Acesso</h2><div class="chips" style="margin-bottom:10px"><button class="chip'+(AC.tab==='acc'?' on':'')+'" data-atab="acc">Acessos</button><button class="chip'+(AC.tab==='chat'?' on':'')+'" data-atab="chat">Chat com a portaria'+(AC.myMeta&&AC.myMeta.unreadM?' ●':'')+'</button></div>';
+ if(AC.tab==='chat'){
+  return h+'<div id="cm">'+chatBox(AC.msgs,'morador')+'</div><div class="abar"><input id="rci" placeholder="Escreva para a portaria…" autocomplete="off"><button data-act="ac-csend" aria-label="Enviar">➤</button></div>';
+ }
+ if(AC.form){
+  var ve=AC.tipo==='veiculo';
+  h+='<div class="box"><label for="ak">Tipo de acesso</label><select id="ak">'+Object.keys(TIPOS).map(function(k){return '<option value="'+k+'"'+(AC.tipo===k?' selected':'')+'>'+TIPOS[k]+'</option>'}).join('')+'</select><label for="av">Nome do visitante ou prestador</label><input id="av" maxlength="60" autocomplete="off">'+(ve?'<label for="amo">Modelo do carro</label><input id="amo" maxlength="40" placeholder="Ex.: Onix"><label for="aco">Cor</label><input id="aco" maxlength="20" placeholder="Ex.: Prata"><label for="apl">Placa</label><input id="apl" maxlength="10" autocapitalize="characters" placeholder="ABC1D23">':'')+'<label for="ao">Dia e horário previstos (opcional)</label><input id="ao" maxlength="60" placeholder="Ex.: Hoje, 19h"><button class="gold" data-act="ac-send">Enviar para a portaria</button><button class="back" data-act="ac-form" style="width:100%;margin-top:6px">Cancelar</button></div>';
+ }else h+='<button class="gold" data-act="ac-form" style="margin-top:0">+ Novo acesso</button>';
+ if(AC.msg)h+='<p class="note">'+esc(AC.msg)+'</p>';
+ var L=AC.mine.slice().sort(function(a,b){return b.ts-a.ts});
+ h+='<div class="cat">Meus acessos</div>';
+ if(!L.length)h+='<p class="note">Nenhum acesso pedido ainda.</p>';
+ L.forEach(function(x){
+  var s2=AST[x.status]||AST.aguardando,extraH='<p style="color:'+s2[1]+';font-weight:700;margin-top:6px">'+s2[0]+'</p>';
+  if(x.status==='enviado')extraH+='<div style="text-align:center;margin:8px 0"><div style="font-size:36px;letter-spacing:.18em;color:var(--g);font-weight:700">'+fmtCode(x.codigo)+'</div><p>Passe este código ao visitante. Ele deve falar o código na triagem. O código vale uma vez só.</p></div>';
+  if(x.status==='usado'&&x.usedTs)extraH+='<small>Entrada em '+hora(x.usedTs)+'</small>';
+  h+=aCard(x,extraH);
+ });
+ return h;
+}
+async function aSend(){
+ var g=function(i){return ((document.getElementById(i)||{}).value||'').trim()},tp=AC.tipo,nome=g('av'),ve=tp==='veiculo';
+ if(!nome){AC.msg='Escreva o nome do visitante ou do prestador.';render();return;}
+ if(ve&&(!g('amo')||!g('aco')||!g('apl'))){AC.msg='Informe o modelo, a cor e a placa do carro.';render();return;}
+ var me=window.ME||{};
+ var d={uid:AU.cid,nome:me.nome||'',apto:me.apto||'',tipo:tp,visitante:nome,modelo:ve?g('amo'):'',cor:ve?g('aco'):'',placa:ve?g('apl').toUpperCase():'',obs:g('ao'),status:'aguardando',ts:Date.now()};
+ try{await AU.db.doc('acessos/a'+Date.now()+Math.floor(Math.random()*1000)).set(d);AC.form=false;AC.msg='Enviado! A portaria vai confirmar.';}
+ catch(e){AC.msg='Não foi possível enviar. Tente de novo.';}
+ render();
+}
+function markM(){if(AU.db&&AU.cid&&AC.myMeta&&AC.myMeta.unreadM){AU.db.doc('chats/'+AU.cid).set(Object.assign({},AC.myMeta,{unreadM:false})).catch(function(){})}}
+async function cSendM(){
+ var i=document.getElementById('rci'),t=i?i.value.trim():'';if(!t||!AU.db||!AU.cid)return;i.value='';
+ var me=window.ME||{},now=Date.now();
+ try{
+  await AU.db.doc('chats/'+AU.cid+'/msgs/m'+now+Math.floor(Math.random()*1000)).set({de:'morador',nome:me.nome||'',t:t,ts:now});
+  await AU.db.doc('chats/'+AU.cid).set({nome:me.nome||'',apto:me.apto||'',lastText:t,lastFrom:'morador',ts:now,unreadP:true,unreadM:false});
+ }catch(e){AC.msg='Não foi possível enviar a mensagem.';render();}
+}
+/* ---------- portaria ---------- */
+function paccView(){
+ var L=AC.all.slice().sort(function(a,b){return b.ts-a.ts}),g=function(k){return L.filter(function(x){return x.status===k})},h='<h2>Pedidos de acesso</h2>';
+ var ag=g('aguardando'),cf=g('confirmado'),en=g('enviado'),hi=L.filter(function(x){return x.status==='usado'||x.status==='recusado'}).slice(0,15);
+ h+='<div class="cat">Aguardando confirmação ('+ag.length+')</div>';
+ if(!ag.length)h+='<p class="note">Nenhum pedido novo.</p>';
+ ag.forEach(function(x){h+=aCard(x,'<div style="display:flex;gap:8px;margin-top:10px"><button class="gold" style="margin:0;flex:1" data-pconf="'+esc(x.id)+'">Confirmar</button><button class="back" style="flex:1" data-pref="'+esc(x.id)+'">Recusar</button></div>')});
+ h+='<div class="cat">Confirmados: enviar o código ('+cf.length+')</div>';
+ if(!cf.length)h+='<p class="note">Nada para enviar.</p>';
+ cf.forEach(function(x){h+=aCard(x,'<div style="text-align:center;margin:10px 0"><div style="font-size:36px;letter-spacing:.18em;color:var(--g);font-weight:700">'+fmtCode(x.codigo)+'</div></div><button class="gold" data-psend="'+esc(x.id)+'">Enviar código ao morador</button>')});
+ h+='<div class="cat">Código enviado: aguardando o visitante ('+en.length+')</div>';
+ if(!en.length)h+='<p class="note">Nenhum.</p>';
+ en.forEach(function(x){h+=aCard(x,'<p style="margin-top:6px"><b>Código '+fmtCode(x.codigo)+'</b></p>')});
+ h+='<div class="cat">Histórico</div>';
+ if(!hi.length)h+='<p class="note">Nada por aqui ainda.</p>';
+ hi.forEach(function(x){var s2=AST[x.status];h+=aCard(x,'<p style="color:'+s2[1]+';font-weight:700;margin-top:6px">'+s2[0]+(x.usedTs?' • '+hora(x.usedTs):'')+'</p>')});
+ return h;
+}
+async function pConf(id){var x=AC.all.filter(function(i){return i.id===id})[0];if(!x||!AU.db)return;try{await aWrite(x,{status:'confirmado',codigo:genCode(),confTs:Date.now()});audit('Portaria','Confirmou acesso',(x.visitante||'')+' — '+(x.apto||''));}catch(e){}}
+async function pRef(id){var x=AC.all.filter(function(i){return i.id===id})[0];if(!x||!AU.db)return;if(!window.confirm('Recusar o pedido de '+(x.visitante||'este visitante')+'?'))return;try{await aWrite(x,{status:'recusado'});audit('Portaria','Recusou acesso',(x.visitante||'')+' — '+(x.apto||''));}catch(e){}}
+async function pSend(id){
+ var x=AC.all.filter(function(i){return i.id===id})[0];if(!x||!AU.db)return;var now=Date.now();
+ try{
+  await aWrite(x,{status:'enviado',envTs:now});
+  await AU.db.doc('chats/'+x.uid+'/msgs/m'+now+Math.floor(Math.random()*1000)).set({de:'portaria',nome:'Portaria',t:'Seu acesso para '+x.visitante+(x.tipo==='veiculo'?' ('+x.placa+')':'')+' foi confirmado. Código: '+fmtCode(x.codigo)+'. Passe ao visitante: ele deve falar este código na triagem. Vale uma vez só.',ts:now});
+  await AU.db.doc('chats/'+x.uid).set({nome:x.nome||'',apto:x.apto||'',lastText:'Código do acesso enviado',lastFrom:'portaria',ts:now,unreadP:false,unreadM:true});
+  audit('Portaria','Enviou código',(x.visitante||'')+' — '+(x.apto||''));
+ }catch(e){}
+}
+function pvalView(){
+ var h='<h2>Validar código</h2><div class="box"><label for="pcode">Código que o visitante falou</label><input id="pcode" inputmode="numeric" maxlength="7" autocomplete="off" placeholder="000 000"><button class="gold" data-act="p-check">Conferir</button></div>';
+ if(PV.ok){h+='<p class="note" style="color:#14573a;font-weight:700">'+esc(PV.ok)+'</p>';PV.ok='';}
+ if(PV.msg)h+='<p class="note" style="color:#b3151b;font-weight:700">'+esc(PV.msg)+'</p>';
+ if(PV.res){var x=AC.all.filter(function(i){return i.id===PV.res})[0];if(x)h+=aCard(x,x.status==='enviado'?'<button class="gold" data-pliber="'+esc(x.id)+'">Liberar entrada</button>':'<p style="color:#5d6b62;font-weight:700">'+(AST[x.status]||['',''])[0]+'</p>')}
+ return h;
+}
+function pCheck(){
+ var c=((document.getElementById('pcode')||{}).value||'').replace(/\D/g,'');PV.res=null;PV.msg='';PV.ok='';
+ if(c.length!==6){PV.msg='Digite os 6 números do código.';return;}
+ var x=AC.all.filter(function(i){return i.codigo===c})[0];
+ if(!x){PV.msg='Código não encontrado.';return;}
+ if(x.status==='usado'){PV.msg='Este código já foi usado'+(x.usedTs?' em '+hora(x.usedTs):'')+'.';PV.res=x.id;return;}
+ if(x.status!=='enviado'){PV.msg='Este código ainda não foi enviado ao morador.';PV.res=x.id;return;}
+ PV.res=x.id;
+}
+async function pLiber(id){var x=AC.all.filter(function(i){return i.id===id})[0];if(!x||!AU.db)return;try{await aWrite(x,{status:'usado',usedTs:Date.now()});audit('Portaria','Liberou entrada',(x.visitante||'')+' — '+(x.apto||''));PV.res=null;PV.msg='';PV.ok='Entrada liberada.';}catch(e){PV.msg='Não foi possível liberar.';}render();}
+function pchatView(){
+ var l=AC.chats.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0)}),h='<h2>Chat com moradores</h2>';
+ if(!l.length)return h+'<p class="note">Nenhuma conversa ainda.</p>';
+ l.forEach(function(c){h+='<button class="box vrow" data-pthr="'+esc(c.id)+'"><h4>'+esc(c.nome||'Morador')+(c.unreadP?' <span class="pri" style="background:#b3151b">NOVA</span>':'')+'</h4><small>'+esc(c.apto||'')+' • '+hora(c.ts||0)+'</small><p>'+esc(c.lastText||'')+'</p></button>'});
+ return h;
+}
+function pOpen(uid){
+ AC.thread=uid;AC.msgs=[];st.sc='pthread';
+ if(AC.unsubT)try{AC.unsubT()}catch(e){}
+ AC.unsubT=AU.db.collection('chats/'+uid+'/msgs').orderBy('ts','asc').onSnapshot(function(sn){AC.msgs=sn.docs.map(function(d){return d.data()});var pi=document.getElementById('pci');if(st.sc==='pthread'&&!(pi&&pi.value))render()},function(){});
+ var m=AC.chats.filter(function(c){return c.id===uid})[0];
+ if(m&&m.unreadP){var d=Object.assign({},m,{unreadP:false});delete d.id;AU.db.doc('chats/'+uid).set(d).catch(function(){})}
+}
+function pthreadView(){
+ var m=AC.chats.filter(function(c){return c.id===AC.thread})[0]||{};
+ return '<h2>'+esc(m.nome||'Morador')+'</h2><p class="note" style="margin:0 0 8px;text-align:left">'+esc(m.apto||'')+'</p><div id="cm">'+chatBox(AC.msgs,'portaria')+'</div><div class="abar"><input id="pci" placeholder="Escreva ao morador…" autocomplete="off"><button data-act="p-csend" aria-label="Enviar">➤</button></div>';
+}
+async function cSendP(){
+ var i=document.getElementById('pci'),t=i?i.value.trim():'';if(!t||!AU.db||!AC.thread)return;i.value='';
+ var m=AC.chats.filter(function(c){return c.id===AC.thread})[0]||{},now=Date.now();
+ try{
+  await AU.db.doc('chats/'+AC.thread+'/msgs/m'+now+Math.floor(Math.random()*1000)).set({de:'portaria',nome:'Portaria',t:t,ts:now});
+  await AU.db.doc('chats/'+AC.thread).set({nome:m.nome||'',apto:m.apto||'',lastText:t,lastFrom:'portaria',ts:now,unreadP:false,unreadM:true});
+ }catch(e){}
+}
+var _r0=render;render=function(){_r0();if(st.sc==='pthread'||(st.sc==='acc'&&AC.tab==='chat')){var mn=document.querySelector('main');if(mn)mn.scrollTop=mn.scrollHeight}};
+window.__onMe=function(me){
+ if(me.role==='adm'){var u=USERS[me.id];st.user={id:me.id,nome:u.nome,ap:u.ap,cargo:u.cargo,def:false};AU.uid='u:'+me.id;memLoad(me.id);st.role='adm';st.sc='adm';}
+ else if(me.role==='portaria'){st.user={id:'portaria',nome:'Portaria',ap:'portaria',cargo:'Portaria',def:false};AU.uid='u:portaria';st.role='por';st.sc='pacc';}
+ else{st.role='mor';st.sc='mhome';}
+ render();
+};
+document.getElementById('app').addEventListener('change',function(e){if(e.target&&e.target.id==='ak'){AC.tipo=e.target.value;render();}});
+document.getElementById('app').addEventListener('keydown',function(e){
+ if(e.key!=='Enter')return;
+ if(e.target.id==='rci'){e.preventDefault();cSendM();}
+ else if(e.target.id==='pci'){e.preventDefault();cSendP();}
+ else if(e.target.id==='pcode'){e.preventDefault();pCheck();render();}
+});
+(function(){
+ if(!(window.claude&&claude.use))return;
+ claude.use('db').then(function(db){
+  if(!db)return;var role=window.ME&&window.ME.role;
+  if(role==='portaria'||role==='adm'){
+   db.collection('acessos').orderBy('ts','desc').limit(150).onSnapshot(function(sn){AC.all=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(['pacc','pval'].indexOf(st.sc)>-1||st.role==='por')render()},function(){});
+   db.collection('chats').orderBy('ts','desc').limit(100).onSnapshot(function(sn){AC.chats=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(st.sc==='pchat'||st.role==='por')render()},function(){});
+  }else if(role==='morador'){
+   claude.use('user').then(function(u){return u&&u.id()}).then(function(uid){
+    if(!uid)return;
+    db.collection('acessos').where('uid','==',uid).onSnapshot(function(sn){AC.mine=sn.docs.map(function(d){return Object.assign({id:d.id},d.data())});if(st.sc==='acc')render()},function(){});
+    db.doc('chats/'+uid).onSnapshot(function(sn){AC.myMeta=sn.exists?sn.data():null;if(st.sc==='acc'||st.sc==='mhome')render()},function(){});
+    db.collection('chats/'+uid+'/msgs').orderBy('ts','asc').onSnapshot(function(sn){AC.msgs=sn.docs.map(function(d){return d.data()});var i=document.getElementById('rci');if(st.sc==='acc'&&!(i&&i.value))render();if(st.sc==='acc'&&AC.tab==='chat')markM()},function(){});
+   });
+  }
+ }).catch(function(){});
+})();
+
+</script>
 <script type="module">
 
 import {initializeApp} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,sendPasswordResetEmail,deleteUser,updatePassword} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,deleteDoc,onSnapshot,collection,query,orderBy,limit} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,deleteDoc,onSnapshot,collection,query,orderBy,limit,where} from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBXgmOaeg8nxyQjG72s7WmRakAXJWut4Ag",
@@ -1192,6 +1381,7 @@ const app=initializeApp(firebaseConfig),auth=getAuth(app),fdb=getFirestore(app);
 
 // Administradores (identificados pelo hash do e-mail; os e-mails ficam só em firestore.rules)
 const ADMINS={'bdc34b2fc07b58f5e406f57e215aa45f71aea3102c704fa48407b37ba0393eba':'rodrigo','0cac9b3c8058d1903204f31bbdfdfb0ec0e88c0f8ff15d46213e7bcc7be274eb':'alessandra','735873acdcb5fc2a47cc6a387a9d3a2fa21203f6575902064fb5d4e22e5510c5':'admin'};
+const PORT={'c2b08d2f3ac056103713f2afdef14ad62cc6c20d90b57f383a3c386301759485':'portaria'};
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 
 function snapD(s){return{exists:s.exists(),data:()=>s.data()}}
@@ -1204,6 +1394,7 @@ function mkdb(){
  function c(path,qs){const base=collection(fdb,path);return{
   orderBy:(f,dir)=>c(path,(qs||[]).concat([orderBy(f,dir)])),
   limit:n=>c(path,(qs||[]).concat([limit(n)])),
+  where:(f,o,v)=>c(path,(qs||[]).concat([where(f,o,v)])),
   doc:id=>d(path+'/'+id),
   onSnapshot:(cb,err)=>onSnapshot(qs&&qs.length?query(base,...qs):base,sn=>cb({docs:sn.docs.map(x=>({id:x.id,data:()=>x.data()}))}),err||(()=>{}))}}
  return{doc:d,collection:p=>c(p)};
@@ -1247,8 +1438,9 @@ function draw(){
  gate.hidden=false;let f='';
  const v=i=>E(vals[i]||'');
  if(mode==='load')f='<p class="gn">Carregando…</p>';
- else if(mode==='home')f=`<p class="gn" style="font-size:18px;margin:6px 0 14px">Como você quer entrar?</p><button class="gb" data-g="goadm">⚙️ Administração</button><button class="gb" data-g="gomor" style="margin-top:12px">👥 Moradores</button>`;
+ else if(mode==='home')f=`<p class="gn" style="font-size:18px;margin:6px 0 14px">Como você quer entrar?</p><button class="gb" data-g="goadm">⚙️ Administração</button><button class="gb" data-g="gomor" style="margin-top:12px">👥 Moradores</button><button class="gb" data-g="gopor" style="margin-top:12px">🛂 Portaria</button>`;
  else if(mode==='adm')f=`<p class="gn" style="margin:0 0 4px">Administração</p><label for="ge">Usuário</label><input id="ge" type="text" autocapitalize="none" autocomplete="username" placeholder="Ex.: Alessandra" value="${v('ge')}"><label for="gp">Senha</label><input id="gp" type="password" autocomplete="current-password"><button class="gb" data-g="in"${busy?' disabled':''}>${busy?'Entrando…':'Entrar'}</button><button class="gl" data-g="home">‹ Voltar</button>`;
+ else if(mode==='por')f=`<p class="gn" style="margin:0 0 4px">Portaria</p><label for="ge">Usuário</label><input id="ge" type="text" autocapitalize="none" autocomplete="username" placeholder="Portaria" value="${v('ge')}"><label for="gp">Senha</label><input id="gp" type="password" autocomplete="current-password"><button class="gb" data-g="in"${busy?' disabled':''}>${busy?'Entrando…':'Entrar'}</button><button class="gl" data-g="home">‹ Voltar</button>`;
  else if(mode==='morin')f=`<p class="gn" style="margin:0 0 4px">Moradores</p><label for="ge">E-mail</label><input id="ge" type="email" autocapitalize="none" autocomplete="email" value="${v('ge')}"><label for="gp">Senha</label><input id="gp" type="password" autocomplete="current-password"><button class="gb" data-g="in"${busy?' disabled':''}>${busy?'Entrando…':'Entrar'}</button><button class="gl" data-g="forgot">Esqueci minha senha</button><button class="gl" data-g="goreg">Primeiro acesso (cadastro)</button><button class="gl" data-g="home">‹ Voltar</button>`;
  else if(mode==='pending')f=`<p style="text-align:center;font-size:18px">⏳ Cadastro enviado!</p><p style="text-align:center">A administração vai conferir o seu nome, bloco e apartamento e liberar o acesso. Volte aqui depois para ver se já foi aprovado.</p><button class="gb" data-g="recheck">Verificar agora</button><button class="gl" data-g="out">Sair</button>`;
  else if(mode==='force')f=`<p style="text-align:center">Primeiro acesso: crie uma senha só sua. A senha padrão é fraca e não pode continuar.</p><label for="fp1">Nova senha (mínimo 8 caracteres)</label><input id="fp1" type="password" autocomplete="new-password"><label for="fp2">Repita a nova senha</label><input id="fp2" type="password" autocomplete="new-password"><button class="gb" data-g="force">Salvar nova senha</button><button class="gl" data-g="out">Sair</button>`;
@@ -1269,20 +1461,22 @@ async function proceed(u){
  if(started)return;
  const em=(u.email||'').toLowerCase(),eh=await sha(em);let me=null;
  if(ADMINS[eh])me={role:'adm',id:ADMINS[eh]};
+ else if(PORT[eh])me={role:'portaria',id:'portaria'};
  else{try{const s=await getDoc(doc(fdb,'usuarios',u.uid));if(s.exists()&&s.data().role==='morador')me={role:'morador',id:u.uid,nome:s.data().nome,apto:s.data().apto,status:s.data().status||''}}catch(e){}}
- if(!me){msg='Esta conta não tem acesso ao app. Moradores: use o primeiro acesso com o código do condomínio.';busy=false;mode=door==='adm'?'adm':'morin';await signOut(auth);draw();return}
+ if(!me){msg='Esta conta não tem acesso ao app. Moradores: use o primeiro acesso com o código do condomínio.';busy=false;mode=door==='adm'?'adm':door==='por'?'por':'morin';await signOut(auth);draw();return}
  if(me.role==='morador'&&me.status!=='aprovado'){busy=false;mode='pending';await draw();return}
- if(door==='adm'&&me.role!=='adm'){msg='Esta conta não é da administração. Volte e escolha Moradores.';busy=false;mode='adm';await signOut(auth);draw();return}
- if(door==='mor'&&me.role==='adm'){msg='Esta conta é da administração. Volte e escolha Administração.';busy=false;mode='morin';await signOut(auth);draw();return}
- if(me.role==='adm'&&mustChange(u)){mode='force';msg='';busy=false;draw();return}
+ if(door==='adm'&&me.role!=='adm'){msg='Esta conta não é da administração. Volte e escolha a porta certa.';busy=false;mode='adm';await signOut(auth);draw();return}
+ if(door==='por'&&me.role!=='portaria'){msg='Esta conta não é da portaria. Volte e escolha a porta certa.';busy=false;mode='por';await signOut(auth);draw();return}
+ if(door==='mor'&&me.role!=='morador'){msg='Esta conta não é de morador. Volte e escolha a porta certa.';busy=false;mode='morin';await signOut(auth);draw();return}
+ if(me.role!=='morador'&&mustChange(u)){mode='force';msg='';busy=false;draw();return}
  started=true;gate.hidden=true;window.ME=me;
  if(window.__onMe)window.__onMe(me);
  window.__fbres(api);
 }
 async function doIn(){
  const raw=vals.ge||'',pe=document.getElementById('gp'),pw=pe?pe.value:'';
- door=mode==='adm'?'adm':'mor';
- if(!raw||!pw){msg=door==='adm'?'Digite o usuário e a senha.':'Digite o e-mail e a senha.';draw();return}
+ door=mode==='adm'?'adm':mode==='por'?'por':'mor';
+ if(!raw||!pw){msg=(door==='adm'||door==='por')?'Digite o usuário e a senha.':'Digite o e-mail e a senha.';draw();return}
  if(door==='mor'&&!raw.includes('@')){msg='Moradores entram com o e-mail do cadastro.';draw();return}
  const em=toEmail(raw);
  pendingDefault=(pw==='123456');busy=true;msg='';draw();
@@ -1312,6 +1506,7 @@ gate.addEventListener('click',async e=>{
  if(a==='goreg'){mode='morreg';msg='';draw()}
  else if(a==='goin'||a==='gomor'){mode='morin';msg='';draw()}
  else if(a==='goadm'){mode='adm';msg='';draw()}
+ else if(a==='gopor'){mode='por';msg='';draw()}
  else if(a==='home'){mode='home';msg='';draw()}
  else if(a==='in')await doIn();
  else if(a==='reg')await doReg();
@@ -1325,7 +1520,7 @@ gate.addEventListener('change',async e=>{
  else if(e.target.id==='gk'){consent=e.target.checked}
 });
 gate.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='fp2'){e.preventDefault();doForce();return}
- if(e.key==='Enter'&&e.target.id==='gp'){e.preventDefault();snap();(mode==='adm'||mode==='morin'?doIn:doReg)()}});
+ if(e.key==='Enter'&&e.target.id==='gp'){e.preventDefault();snap();(mode==='adm'||mode==='por'||mode==='morin'?doIn:doReg)()}});
 onAuthStateChanged(auth,async u=>{
  if(signing)return;
  if(!u){if(mode==='load')mode='home';draw();return}
